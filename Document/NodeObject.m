@@ -28,6 +28,7 @@
  */
 
 #import "NodeObject.h"
+#import "AutocompletionPool.h"
 
 @implementation NodeObject
 
@@ -38,6 +39,7 @@
 	self = [super init];
 	if (self) {
 		key = theKey;
+        [AutocompletionPool.sharedInstance addString:theKey];
 		value = theValue;
 	}
 
@@ -143,10 +145,14 @@
     if ([newKey isEqualToString: key]) {
         return;
     }
-    NSString *oldType = self.key;
-    if (nil != oldType) {
+    NSString *oldKey = self.key;
+    
+    if (nil != oldKey) {
+        [AutocompletionPool.sharedInstance removeString:oldKey];
+        [AutocompletionPool.sharedInstance addString:newKey];
+
         [self.undoManager registerUndoWithTarget:self handler:^(id  _Nonnull target) {
-            [target setKey:oldType];
+            [target setKey:oldKey];
         }];
     }
 

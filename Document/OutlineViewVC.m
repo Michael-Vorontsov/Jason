@@ -34,16 +34,21 @@
 #import "Document.h"
 #import "SBJsonParser.h"
 #import "SBJsonWriter.h"
+#import "AutocompletionPool.h"
+#import "TextViewDelegateInterseptor.h"
+
 
 @interface OutlineViewVC ()
-- (BOOL)outlineView:(NSOutlineView *)theView shouldEditTableColumn:(NSTableColumn *)tableColumn item:(id)item;
 - (void)refreshView;
 - (void)changeTypeTo:(NSUInteger)newType forIndexSet:(NSIndexSet *)indexSet;
 
 @property (nonatomic, strong) NSMutableSet *subscriptions;
 @property (nonatomic, strong) NSArray *dragItems;
+//@property (nonatomic, weak) id<NSTextViewDelegate> textEditorDelegate;
+@property (nonatomic, strong) TextViewDelegateInterseptor *textEditorDelegateInterseptor;
 
 @end
+
 
 @implementation OutlineViewVC
 
@@ -175,7 +180,7 @@ static NSNumberFormatter *numberFormatter = nil;
 	if (tableColumn == keyColumn) {
 		NSTreeNode *parentNode = [currentNode parentNode];
 		NodeObject *parentObject = [parentNode representedObject];
-		shouldEdit = (! editValueColumnOnly) && parentObject && parentObject.type == kNodeObjectTypeDictionary;
+		shouldEdit = (! editValueColumnOnly) && parentObject.type == kNodeObjectTypeDictionary;
 	}
 	else if (tableColumn == typeColumn) {
 		shouldEdit = ! editValueColumnOnly;	
@@ -187,6 +192,16 @@ static NSNumberFormatter *numberFormatter = nil;
 					  type == kNodeObjectTypeBool);
 	}
 	
+    NSTextView* textEditor = (NSTextView *)[self.outlineView currentEditor];
+    if (shouldEdit && textEditor.delegate != self.textEditorDelegateInterseptor) {
+        if (nil == self.textEditorDelegateInterseptor) {
+            self.textEditorDelegateInterseptor = [TextViewDelegateInterseptor new];
+        }
+        [self.textEditorDelegateInterseptor addDelegate: textEditor.delegate];
+        [self.textEditorDelegateInterseptor addDelegate: self];
+        textEditor.delegate = self.textEditorDelegateInterseptor;
+    }
+
 	return shouldEdit;
 }
 
@@ -206,6 +221,10 @@ static NSNumberFormatter *numberFormatter = nil;
 
 - (BOOL)outlineView:(NSOutlineView *)view isItemExpandable:(id)item {
 	return ! [(NSTreeNode *)item isLeaf];
+}
+
+- (BOOL)outlineView:(NSOutlineView *)outlineView shouldShowCellExpansionForTableColumn:(NSTableColumn *)tableColumn item:(id)item {
+    return (tableColumn == valueColumn);
 }
 
 - (id)outlineView:(NSOutlineView *)theOutlineView
@@ -269,6 +288,15 @@ objectValueForTableColumn:(NSTableColumn *)tableColumn
         NSTreeNode *parentNode = [outlineView parentForItem:currentNode];
         NodeObject *currentObject = [currentNode representedObject];
         
+        if (kNodeObjectTypeDictionary == currentObject.type && kNodeObjectTypeArray == newType) {
+            NSInteger index = 0;
+            for (NSTreeNode *each in currentNode.childNodes) {
+                NodeObject *subNode = each.representedObject;
+                subNode.key = [NSString stringWithFormat:NSLocalizedString(@"Item %u", @""), index];
+                index++;
+            }
+        }
+        
         currentObject.type = (NodeObjectType)newType;
         
         if (parentNode == nil) { // replacing the root object
@@ -278,6 +306,8 @@ objectValueForTableColumn:(NSTableColumn *)tableColumn
         else {
             [outlineView reloadItem:currentNode];
         }
+        
+        
         
         [doc updateChangeCount:NSChangeDone];
     }
@@ -783,4 +813,21 @@ objectValueForTableColumn:(NSTableColumn *)tableColumn
     }
 }
 
+- (NSArray<NSString *> *)textView:(NSTextView *)textView completions:(NSArray<NSString *> *)words forPartialWordRange:(NSRange)charRange indexOfSelectedItem:(NSInteger *)index {
+//    NSArray *suggestions = @[@"some", @"weird", @"words"];
+    NSArray *suggestions = [AutocompletionPool.sharedInstance suggestionsForMask:textView.string];
+    
+    return suggestions;
+}
+
+- (void)textDidChange:(NSNotification *)notification{
+//    NSTextView *textView = notification.object;
+//    NSString *text = textView.string;
+//    if (text.length > 3) {
+//        [textView complete:nil];
+//    }
+}
+
 @end
+
+

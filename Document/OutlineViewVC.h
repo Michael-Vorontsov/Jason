@@ -32,7 +32,7 @@
 
 @class OutlineView;
 
-@interface OutlineViewVC : NSViewController <OutlineViewDelegate, NSOutlineViewDataSource> {
+@interface OutlineViewVC : NSViewController <OutlineViewDelegate, NSOutlineViewDataSource, NSTextViewDelegate, NSControlTextEditingDelegate> {
 	IBOutlet NSScrollView *outlineScrollView;
 	IBOutlet OutlineView *outlineView;
 	IBOutlet NSTableColumn *keyColumn;

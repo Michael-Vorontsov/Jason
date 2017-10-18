@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		097AE9861F97640000089C33 /* AutocompletionPool.m in Sources */ = {isa = PBXBuildFile; fileRef = 097AE9851F97640000089C33 /* AutocompletionPool.m */; };
+		097AE98B1F97C55200089C33 /* TextViewDelegateInterseptor.m in Sources */ = {isa = PBXBuildFile; fileRef = 097AE98A1F97C55200089C33 /* TextViewDelegateInterseptor.m */; };
 		1418D026125D61D10040CBB6 /* DocumentWC.m in Sources */ = {isa = PBXBuildFile; fileRef = 1418D025125D61D10040CBB6 /* DocumentWC.m */; };
 		1418D029125D61EB0040CBB6 /* NodeObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 1418D028125D61EB0040CBB6 /* NodeObject.m */; };
 		142FB6811272BEBE00EE4328 /* OutlineView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 142FB6801272BEBE00EE4328 /* OutlineView.xib */; };
@@ -50,6 +52,10 @@
 
 /* Begin PBXFileReference section */
 		089C1660FE840EACC02AAC07 /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		097AE9841F97640000089C33 /* AutocompletionPool.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AutocompletionPool.h; sourceTree = "<group>"; };
+		097AE9851F97640000089C33 /* AutocompletionPool.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AutocompletionPool.m; sourceTree = "<group>"; };
+		097AE9891F97C55200089C33 /* TextViewDelegateInterseptor.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TextViewDelegateInterseptor.h; sourceTree = "<group>"; };
+		097AE98A1F97C55200089C33 /* TextViewDelegateInterseptor.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TextViewDelegateInterseptor.m; sourceTree = "<group>"; };
 		0A4183721938322900FB18D6 /* Jason.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Jason.pch; path = Support/Jason.pch; sourceTree = "<group>"; };
 		1058C7A7FEA54F5311CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
 		1418D024125D61D10040CBB6 /* DocumentWC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DocumentWC.h; path = Document/DocumentWC.h; sourceTree = "<group>"; };
@@ -164,6 +170,10 @@
 				14E795BE125BBA38006EC2F6 /* OutlineView.m */,
 				1418D027125D61EB0040CBB6 /* NodeObject.h */,
 				1418D028125D61EB0040CBB6 /* NodeObject.m */,
+				097AE9841F97640000089C33 /* AutocompletionPool.h */,
+				097AE9851F97640000089C33 /* AutocompletionPool.m */,
+				097AE9891F97C55200089C33 /* TextViewDelegateInterseptor.h */,
+				097AE98A1F97C55200089C33 /* TextViewDelegateInterseptor.m */,
 			);
 			name = Document;
 			sourceTree = "<group>";
@@ -345,6 +355,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				097AE98B1F97C55200089C33 /* TextViewDelegateInterseptor.m in Sources */,
 				14E795B9125BB9FE006EC2F6 /* OpenURLWC.m in Sources */,
 				14E795BF125BBA38006EC2F6 /* Document.m in Sources */,
 				14E795C0125BBA38006EC2F6 /* OutlineView.m in Sources */,
@@ -354,6 +365,7 @@
 				14E795D0125BBA96006EC2F6 /* SBJsonParser.m in Sources */,
 				14E795D1125BBA96006EC2F6 /* SBJsonWriter.m in Sources */,
 				14E795D3125BBAAC006EC2F6 /* main.m in Sources */,
+				097AE9861F97640000089C33 /* AutocompletionPool.m in Sources */,
 				1495F31B125CEA69008DA431 /* AppDelegate.m in Sources */,
 				1418D026125D61D10040CBB6 /* DocumentWC.m in Sources */,
 				1418D029125D61EB0040CBB6 /* NodeObject.m in Sources */,
