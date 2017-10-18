@@ -144,9 +144,11 @@
         return;
     }
     NSString *oldType = self.key;
-    [self.undoManager registerUndoWithTarget:self handler:^(id  _Nonnull target) {
-        [target setKey:oldType];
-    }];
+    if (nil != oldType) {
+        [self.undoManager registerUndoWithTarget:self handler:^(id  _Nonnull target) {
+            [target setKey:oldType];
+        }];
+    }
 
     key = newKey;
 }

@@ -550,14 +550,16 @@ objectValueForTableColumn:(NSTableColumn *)tableColumn
         case kNodeObjectTypeDictionary:
             break;
         case kNodeObjectTypeArray:
-            childIndex += [node childNodes].count;
             break;
         case kNodeObjectTypeNull:
         case kNodeObjectTypeBool:
         case kNodeObjectTypeNumber:
-        case kNodeObjectTypeString:
-            node = [node parentNode];
+        case kNodeObjectTypeString: {
+            NSTreeNode *parentNode = [node parentNode];
+            childIndex = [[parentNode childNodes] indexOfObject:node] + 1;
+            node = parentNode;
             break;
+        }
     }
     
     
@@ -742,7 +744,6 @@ objectValueForTableColumn:(NSTableColumn *)tableColumn
         [pasteboard writeObjects:objectsToCopy];
     }
 }
-
 - (IBAction)paste:(id)sender {
     NSError *error = nil;
     NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
