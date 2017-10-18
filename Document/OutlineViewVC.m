@@ -41,6 +41,8 @@
 - (void)changeTypeTo:(NSUInteger)newType forIndexSet:(NSIndexSet *)indexSet;
 
 @property (nonatomic, strong) NSMutableSet *subscriptions;
+@property (nonatomic, strong) NSArray *dragItems;
+
 @end
 
 @implementation OutlineViewVC
@@ -117,6 +119,10 @@ static NSNumberFormatter *numberFormatter = nil;
       }]
      ];
     
+    [self.outlineView registerForDraggedTypes:@[NSStringPboardType, NSFilenamesPboardType, NSURLPboardType]];
+    [self.outlineView setDraggingSourceOperationMask:NSDragOperationEvery forLocal:YES];
+    [self.outlineView setDraggingSourceOperationMask:NSDragOperationEvery forLocal:NO];
+
     [super viewDidLoad];
 }
 
@@ -477,6 +483,122 @@ objectValueForTableColumn:(NSTableColumn *)tableColumn
     NSInteger selectedRow = outlineView.selectedRow;
     [outlineView editColumn:2 row:selectedRow withEvent:nil select:YES];
 }
+
+#pragma mark -
+#pragma mark Drag&Drop
+
+/* Setup a local reorder. */
+- (void)outlineView:(NSOutlineView *)outlineView draggingSession:(NSDraggingSession *)session willBeginAtPoint:(NSPoint)screenPoint forItems:(NSArray *)draggedItems {
+    NSMutableString *stringToDrag = [NSMutableString new];
+    self.dragItems = draggedItems;
+    Document *doc = self.representedObject;
+    for (NSTreeNode* each in draggedItems) {
+        [stringToDrag appendString: [doc stringForNode:each]];
+//        [self deleteNode:each fromParent:each.parentNode];
+    }
+    
+    [session.draggingPasteboard setString:stringToDrag forType:NSPasteboardTypeString];
+}
+
+- (void)outlineView:(NSOutlineView *)outlineView draggingSession:(NSDraggingSession *)session endedAtPoint:(NSPoint)screenPoint operation:(NSDragOperation)operation {
+    {
+//        Document *doc = self.representedObject;
+
+        
+        switch (operation) {
+            case NSDragOperationMove:
+            case NSDragOperationGeneric:
+            case NSDragOperationDelete: {
+                //        [self.outlineView beginUpdates];
+                [self.dragItems
+                 enumerateObjectsWithOptions:NSEnumerationReverse
+                 usingBlock:^(NSTreeNode *node, NSUInteger index, BOOL *stop) {
+                     [self deleteNode:node fromParent:node.parentNode];
+//                     id parent = [node parentNode];
+//                     NSMutableArray *children = [parent mutableChildNodes];
+//                     NSInteger childIndex = [children indexOfObject:node];
+//                     [children removeObjectAtIndex:childIndex];
+//
+//                     [self.outlineView
+//                      removeItemsAtIndexes:[NSIndexSet indexSetWithIndex:childIndex]
+//                      inParent:parent ==  doc.rootNode ? nil : parent
+//                      withAnimation:NSTableViewAnimationEffectFade
+//                      ];
+                 }];
+                
+//                [self.outlineView endUpdates];
+                break;
+            }
+            default:
+                break;
+        }
+        
+        self.dragItems = nil;
+    }
+}
+
+- (NSDragOperation)outlineView:(NSOutlineView *)ov validateDrop:(id <NSDraggingInfo>)info proposedItem:(id)item proposedChildIndex:(NSInteger)childIndex {
+    return NSDragOperationGeneric;
+}
+
+- (BOOL)outlineView:(NSOutlineView *)ov acceptDrop:(id <NSDraggingInfo>)info item:(id)item childIndex:(NSInteger)childIndex {
+    Document *doc = self.representedObject;
+    NSTreeNode *node = (NSTreeNode *)item;
+    NodeObject *itemObject = [node representedObject];
+    switch (itemObject.type) {
+            
+        case kNodeObjectTypeDictionary:
+            break;
+        case kNodeObjectTypeArray:
+            childIndex += [node childNodes].count;
+            break;
+        case kNodeObjectTypeNull:
+        case kNodeObjectTypeBool:
+        case kNodeObjectTypeNumber:
+        case kNodeObjectTypeString:
+            node = [node parentNode];
+            break;
+    }
+    
+    
+    NSArray *classes = @[[NSPasteboardItem class]];
+    
+    __block BOOL result = NO;
+    
+    [info
+     enumerateDraggingItemsWithOptions:0
+     forView:self.outlineView
+     classes:classes
+     searchOptions:@{}
+     usingBlock:^(NSDraggingItem *draggingItem, NSInteger index, BOOL *stop) {
+         NSPasteboardItem *pbItem = draggingItem.item;
+         NSString *stringConent = [pbItem stringForType:NSPasteboardTypeString];
+         if (nil == stringConent) {
+             return;
+         }
+         SBJsonParser *parser = [SBJsonParser new];
+         id parsedContents = [parser objectWithString:stringConent error: nil];
+         if (nil == parsedContents) {
+             return;
+         }
+         NSTreeNode *newNode = [[[doc createNewTreeNodeWithContent:parsedContents] childNodes] lastObject];
+         [self insertNode:newNode toParentNode:node atIndex:childIndex];
+         result = YES;
+         
+    }];
+    
+    return result;
+}
+
+
+/* In 10.7 multiple drag images are supported by using this delegate method. */
+- (id <NSPasteboardWriting>)outlineView:(NSOutlineView *)outlineView pasteboardWriterForItem:(id)item {
+    NSString *string = [self.representedObject stringForNode:(NSTreeNode *)item];
+    
+    return string;
+}
+
+
 
 #pragma mark -
 #pragma mark User Interface Validation
