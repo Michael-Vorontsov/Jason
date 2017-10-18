@@ -64,15 +64,37 @@
 
 - (void)setContents:(id)contents {
 	NodeObject *data = [[NodeObject alloc] initWithValue:contents];
+    data.undoManager = self.undoManager;
 	rootNode = [[NSTreeNode alloc] initWithRepresentedObject:data];
 	[self readChildrenOf:rootNode];
 }
 
+- (NSTreeNode *)createNewTreeNodeWithContent:(id)contents {
+    NodeObject *data = [[NodeObject alloc] initWithValue:contents];
+    data.undoManager = self.undoManager;
+    NSTreeNode *node = [[NSTreeNode alloc] initWithRepresentedObject:data];
+    [self readChildrenOf: node];
+    if (nil == data.key) {
+        data.key = @"<null>";
+    }
+    return node;
+}
+
 - (id)contents {
-	NodeObject *rootObject = [rootNode representedObject];
-	id contents = rootObject.value;
-	[self writeChildrenOf:rootNode toObject:contents];
-	return contents;
+    return [self contentForNode:self.rootNode];
+}
+
+- (id)contentForNode: (NSTreeNode *)node {
+    NodeObject *rootObject = [node representedObject];
+    
+    id contents = rootObject.value;
+    [self writeChildrenOf:node toObject:contents];
+    if (nil != node.parentNode) {
+        NSString *key = (nil != rootObject.key) ? rootObject.key : @"";
+        contents = @{key : contents };
+    }
+
+    return contents;
 }
 
 - (void)readChildrenOf:(NSTreeNode *)parentNode {
@@ -84,6 +106,7 @@
 		for (id childContents in parentArray) {
 			// Add a node for the child...
 			NodeObject *childObject = [[NodeObject alloc] initWithValue:childContents];
+            childObject.undoManager = self.undoManager;
 			NSTreeNode *childNode = [[NSTreeNode alloc] initWithRepresentedObject:childObject];
 			[children addObject:childNode];
 			
@@ -99,6 +122,8 @@
 		for (NSString *key in [[parentDict allKeys] sortedArrayUsingSelector:@selector(localizedCaseInsensitiveCompare:)]) {
 			// Add a node for the child...
 			NodeObject *childObject = [[NodeObject alloc] initWithKey:key value:[parentDict objectForKey:key]];
+            childObject.undoManager = self.undoManager;
+
 			NSTreeNode *childNode = [[NSTreeNode alloc] initWithRepresentedObject:childObject];
 			[children addObject:childNode];
 			
@@ -112,38 +137,54 @@
 }
 
 - (NSString *)stringRepresentation {
-	SBJsonWriter *parser = [SBJsonWriter new];
-	parser.humanReadable = YES;
-	parser.sortKeys = YES;
-	NSString *string = [parser stringWithObject:self.contents];
-	return string;
+    return [self stringForNode:self.rootNode];
+}
+
+- (NSString *)stringForNode:(NSTreeNode *)node {
+    SBJsonWriter *parser = [SBJsonWriter new];
+    parser.humanReadable = YES;
+    parser.sortKeys = YES;
+    NodeObject *nodeObject = node.representedObject;
+    NSString *contentString = [parser stringWithObject:[self contentForNode:node]];
+    if (nil == contentString) {
+        contentString = [NSString stringWithFormat: @"%@", nodeObject.value];
+    }
+    return contentString;
 }
 
 - (void)writeChildrenOf:(NSTreeNode *)parentNode toObject:(id)object {
 	NodeObject *parentObject = [parentNode representedObject];
 	
-	if (parentObject.type == kNodeObjectTypeArray) {
-		NSMutableArray *array = object;
-		for (NSTreeNode *childNode in [parentNode childNodes]) {
-			// Add the child object...
-			NodeObject *childObject = [childNode representedObject];
-			[array addObject:childObject.value];
-			
-			// ...and recursively add its children
-			[self writeChildrenOf:childNode toObject:childObject.value];
-		}
-	}
-	else if (parentObject.type == kNodeObjectTypeDictionary) {
-		NSMutableDictionary *dict = object;
-		for (NSTreeNode *childNode in [parentNode childNodes]) {
-			// Add the child object...
-			NodeObject *childObject = [childNode representedObject];
-			[dict setObject:childObject.value forKey:childObject.key];
-			
-			// ...and recursively add its children
-			[self writeChildrenOf:childNode toObject:childObject.value];
-		}
-	}
+    switch (parentObject.type) {
+        case kNodeObjectTypeArray: {
+            NSMutableArray *array = object;
+            for (NSTreeNode *childNode in [parentNode childNodes]) {
+                // Add the child object...
+                NodeObject *childObject = [childNode representedObject];
+                [array addObject:childObject.value];
+                
+                // ...and recursively add its children
+                [self writeChildrenOf:childNode toObject:childObject.value];
+            }
+            break;
+        }
+        
+        case kNodeObjectTypeDictionary: {
+            NSMutableDictionary *dict = object;
+            for (NSTreeNode *childNode in [parentNode childNodes]) {
+                // Add the child object...
+                NodeObject *childObject = [childNode representedObject];
+                [dict setObject:childObject.value forKey:childObject.key];
+                
+                // ...and recursively add its children
+                [self writeChildrenOf:childNode toObject:childObject.value];
+            }
+            break;
+        }
+
+        default:
+        break;
+    }
 }
 
 #pragma mark -

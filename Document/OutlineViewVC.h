@@ -58,6 +58,9 @@
 - (IBAction)addRow:(id)sender;
 - (IBAction)deleteRow:(id)sender;
 - (IBAction)toggleEditValueColumnOnly:(id)sender;
+- (IBAction)copy:(id)sender;
+- (IBAction)paste:(id)sender;
+
 - (void)resizeView:(NSNotification *)notification;
 
 @end

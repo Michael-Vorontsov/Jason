@@ -295,7 +295,7 @@
 				ORGANIZATIONNAME = "Olivier Labs";
 				TargetAttributes = {
 					8D15AC270486D014006FF6A4 = {
-						DevelopmentTeam = A57AE84FFJ;
+						DevelopmentTeam = WCL42T797B;
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -441,7 +441,7 @@
 				CODE_SIGN_IDENTITY = "Mac Developer";
 				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = NO;
-				DEVELOPMENT_TEAM = A57AE84FFJ;
+				DEVELOPMENT_TEAM = WCL42T797B;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)\"",
@@ -469,7 +469,7 @@
 				CODE_SIGN_IDENTITY = "Mac Developer";
 				COMBINE_HIDPI_IMAGES = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = A57AE84FFJ;
+				DEVELOPMENT_TEAM = WCL42T797B;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)\"",

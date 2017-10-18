@@ -13,3 +13,4 @@ build
 
 Sparkle.framework/*
 *.pem
+Jason.xcodeproj/xcuserdata

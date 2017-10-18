@@ -59,6 +59,13 @@
 }
 
 - (void)setType:(NodeObjectType)newType {
+    NodeObjectType oldType = self.type;
+    id oldValue = self.value;
+    [self.undoManager registerUndoWithTarget:self handler:^(id  _Nonnull target) {
+        [target setType:oldType];
+        [target setValue:oldValue];
+    }];
+    
 	id newValue = nil;
 	
 	// Possible conversions:
@@ -118,6 +125,30 @@
 	}
 
 	self.value = newValue;
+}
+
+- (void)setValue:(id)newValue {
+    if (value == newValue) {
+        return;
+    }
+    id oldType = self.value;
+    [self.undoManager registerUndoWithTarget:self handler:^(id  _Nonnull target) {
+        [target setValue:oldType];
+    }];
+
+    value = newValue;
+}
+
+- (void)setKey:(NSString *)newKey {
+    if ([newKey isEqualToString: key]) {
+        return;
+    }
+    NSString *oldType = self.key;
+    [self.undoManager registerUndoWithTarget:self handler:^(id  _Nonnull target) {
+        [target setKey:oldType];
+    }];
+
+    key = newKey;
 }
 
 - (BOOL)typeIsCollection {

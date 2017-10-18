@@ -32,10 +32,15 @@
 #import "OutlineViewDelegate.h"
 #import "NodeObject.h"
 #import "Document.h"
+#import "SBJsonParser.h"
+#import "SBJsonWriter.h"
 
 @interface OutlineViewVC ()
 - (BOOL)outlineView:(NSOutlineView *)theView shouldEditTableColumn:(NSTableColumn *)tableColumn item:(id)item;
 - (void)refreshView;
+//@property (nonatomic, readonly, strong) NSUndoManager *undoManager;
+- (void)changeTypeTo:(NSUInteger)newType forIndexSet:(NSIndexSet *)indexSet;
+
 @end
 
 @implementation OutlineViewVC
@@ -47,6 +52,7 @@ static NSNumberFormatter *numberFormatter = nil;
 @synthesize keyColumn;
 @synthesize typeColumn;
 @synthesize valueColumn;
+//@synthesize undoManager = _undoManager;
 
 + (void)initialize {
 	numberFormatter = [NSNumberFormatter new];
@@ -61,48 +67,64 @@ static NSNumberFormatter *numberFormatter = nil;
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
-- (void)loadView {
-	[super loadView];
-	
-	// We want to be notified when the window resizes because the outline
-	// view changes its size according to its contents
-	[[NSNotificationCenter defaultCenter] addObserver:self
-											 selector:@selector(resizeView:)
-												 name:NSWindowDidResizeNotification
-											   object:[[self view] window]];
-	
-	// Prepare cells for the value column
-	buttonCell = [NSButtonCell new];
-	[buttonCell setTitle:@""];
-	[buttonCell setControlSize:NSSmallControlSize];
-	[buttonCell setButtonType:NSSwitchButton];
-	
-	numberCell = [[valueColumn dataCell] copy];
-	[numberCell setFormatter:numberFormatter];
-	[numberCell setEditable:YES];
-	
-	disabledKeyCell = [[keyColumn dataCell] copy];
-	[disabledKeyCell setEnabled:NO];
-	[disabledKeyCell setEditable:NO];
-	//[(NSTextFieldCell *)disabledKeyCell setTextColor:[NSColor darkGrayColor]];
-	
-	disabledTypeCell = [[typeColumn dataCell] copy];
-	[disabledTypeCell setEnabled:NO];
-	[disabledTypeCell setEditable:NO];
-	
-	disabledValueCell = [[valueColumn dataCell] copy];
-	[disabledValueCell setEnabled:NO];
-	[disabledValueCell setEditable:NO];
-	//[(NSTextFieldCell *)disabledValueCell setTextColor:[NSColor darkGrayColor]];
-	
-	// Insert ourselves between the outline view and its next responder
-	// in the responder chain
-	NSResponder *nextResponder = [outlineView nextResponder];
-	[outlineView setNextResponder:self];
-	[self setNextResponder:nextResponder];
-	
-	[outlineView sizeLastColumnToFit];
-	[self refreshView];
+- (void)viewDidLoad {
+    
+    // Prepare cells for the value column
+    buttonCell = [NSButtonCell new];
+    [buttonCell setTitle:@""];
+    [buttonCell setControlSize:NSSmallControlSize];
+    [buttonCell setButtonType:NSSwitchButton];
+    
+    numberCell = [[valueColumn dataCell] copy];
+    [numberCell setFormatter:numberFormatter];
+    [numberCell setEditable:YES];
+    
+    disabledKeyCell = [[keyColumn dataCell] copy];
+    [disabledKeyCell setEnabled:NO];
+    [disabledKeyCell setEditable:NO];
+    //[(NSTextFieldCell *)disabledKeyCell setTextColor:[NSColor darkGrayColor]];
+    
+    disabledTypeCell = [[typeColumn dataCell] copy];
+    [disabledTypeCell setEnabled:NO];
+    [disabledTypeCell setEditable:NO];
+    
+    disabledValueCell = [[valueColumn dataCell] copy];
+    [disabledValueCell setEnabled:NO];
+    [disabledValueCell setEditable:NO];
+    //[(NSTextFieldCell *)disabledValueCell setTextColor:[NSColor darkGrayColor]];
+    
+    // Insert ourselves between the outline view and its next responder
+    // in the responder chain
+    NSResponder *nextResponder = [outlineView nextResponder];
+    [outlineView setNextResponder:self];
+    [self setNextResponder:nextResponder];
+    
+    [outlineView sizeLastColumnToFit];
+    Document *doc = [self representedObject];
+    NSLog(@"%i", [doc hasUndoManager]);
+    // We want to be notified when the window resizes because the outline
+    // view changes its size according to its contents
+    [[NSNotificationCenter defaultCenter]
+     addObserver:self
+     selector:@selector(resizeView:)
+     name:NSWindowDidResizeNotification
+     object:[[self view] window]
+    ];
+
+    [[NSNotificationCenter defaultCenter]
+     addObserver:self
+     selector:@selector(didReciveUndoNotification:)
+     name:NSUndoManagerDidUndoChangeNotification
+     object:nil];
+
+    [[NSNotificationCenter defaultCenter]
+     addObserver:self
+     selector:@selector(didReciveUndoNotification:)
+     name:NSUndoManagerDidRedoChangeNotification
+     object:nil
+    ];
+
+    [super viewDidLoad];
 }
 
 - (void)setRepresentedObject:(id)representedObject {
@@ -114,6 +136,9 @@ static NSNumberFormatter *numberFormatter = nil;
 	[outlineView reloadData];
 	[outlineView expandItem:[outlineView itemAtRow:0] expandChildren:YES];	
 }
+
+#pragma mark -
+#pragma mark Notifications handlers
 
 - (void)resizeView:(NSNotification *)notification {
 	const CGFloat margin = 0.0;
@@ -130,6 +155,10 @@ static NSNumberFormatter *numberFormatter = nil;
 													  outlineViewMaxHeight - usedHeight + margin)];
 		[outlineScrollView setNeedsDisplay:YES];
 	}
+}
+
+- (void)didReciveUndoNotification:(NSNotification *)aNotification {
+    [outlineView reloadData];
 }
 
 #pragma mark -
@@ -251,26 +280,35 @@ objectValueForTableColumn:(NSTableColumn *)tableColumn
 
 - (void)changeTypeTo:(NSUInteger)newType {
 	NSIndexSet *selectedIndexSet = [outlineView selectedRowIndexes];
-	Document *doc = [self representedObject];
-	
-	for (NSUInteger currentIndex = [selectedIndexSet firstIndex];
-		 currentIndex != NSNotFound;
-		 currentIndex = [selectedIndexSet indexGreaterThanIndex:currentIndex]) {
-		NSTreeNode *currentNode = [outlineView itemAtRow:currentIndex];
-		NSTreeNode *parentNode = [outlineView parentForItem:currentNode];
-		NodeObject *currentObject = [currentNode representedObject];
-		
-		currentObject.type = (NodeObjectType)newType;
-		
-		if (parentNode == nil) { // replacing the root object
-			doc.contents = currentObject.value;
-			[outlineView reloadData];
-		}
-		else [outlineView reloadItem:currentNode];
-		
-		[doc updateChangeCount:NSChangeDone];
-	}	
+    [self changeTypeTo:newType forIndexSet: selectedIndexSet];
 }
+
+- (void)changeTypeTo:(NSUInteger)newType forIndexSet:(NSIndexSet *)indexSet {
+    
+    Document *doc = [self representedObject];
+
+    for (NSUInteger currentIndex = [indexSet firstIndex];
+         currentIndex != NSNotFound;
+         currentIndex = [indexSet indexGreaterThanIndex:currentIndex]) {
+        NSTreeNode *currentNode = [outlineView itemAtRow:currentIndex];
+        NSTreeNode *parentNode = [outlineView parentForItem:currentNode];
+        NodeObject *currentObject = [currentNode representedObject];
+        
+        currentObject.type = (NodeObjectType)newType;
+        
+        if (parentNode == nil) { // replacing the root object
+            doc.contents = currentObject.value;
+            [outlineView reloadData];
+        }
+        else {
+            [outlineView reloadItem:currentNode];
+        }
+        
+        [doc updateChangeCount:NSChangeDone];
+    }
+
+}
+
 
 - (void)outlineView:(NSOutlineView *)theOutlineView
 	 setObjectValue:(id)newValue
@@ -326,9 +364,63 @@ objectValueForTableColumn:(NSTableColumn *)tableColumn
 }
 
 #pragma mark -
+
+- (void)deleteNode:(NSTreeNode*)currentNode fromParent:(NSTreeNode*)parentNode {
+    Document *doc = [self representedObject];
+    
+    if (! parentNode) { // removing the root object
+        [doc resetContents];
+        [outlineView reloadData];
+        [doc updateChangeCount:NSChangeDone];
+    }
+    else {
+        NSIndexPath *path = [currentNode indexPath];
+        NSUInteger position = [path indexAtPosition:[path length] - 1];
+        NSTreeNode *nodeToRemove = [[parentNode childNodes] objectAtIndex:position];
+        
+        [doc.undoManager registerUndoWithTarget:self handler:^(id  _Nonnull target) {
+            [target insertNode:nodeToRemove toParentNode:parentNode atIndex:position];
+            
+            NSUInteger rowToSelect = [outlineView rowForItem:nodeToRemove];
+            [outlineView selectRowIndexes:[NSIndexSet indexSetWithIndex:rowToSelect] byExtendingSelection:NO];
+            
+        }];
+        
+        
+        [[parentNode mutableChildNodes] removeObjectAtIndex:position];
+        [outlineView reloadItem:parentNode reloadChildren:YES];
+        [doc updateChangeCount:NSChangeDone];
+    }
+    [self resizeView:nil];
+    
+}
+
+- (void)insertNode:(NSTreeNode *)newNode toParentNode:(NSTreeNode *)parentNode atIndex:(NSUInteger)row {
+    Document *doc = [self representedObject];
+    
+    [doc.undoManager registerUndoWithTarget:self handler:^(id  _Nonnull target) {
+        [target deleteNode:newNode fromParent:parentNode];
+    }];
+    
+    
+    if (row < parentNode.childNodes.count) {
+        [[parentNode mutableChildNodes] insertObject:newNode atIndex:row];
+    } else {
+        [[parentNode mutableChildNodes] addObject:newNode];
+    }
+    [outlineView reloadItem:parentNode reloadChildren:YES];
+    [outlineView expandItem:parentNode];
+    
+    [self resizeView:nil];
+}
+
+
+#pragma mark -
 #pragma mark IB Actions
 
 - (IBAction)addRow:(id)sender {
+    Document *doc = [self representedObject];
+
 	// Search for a collection (array, dictionary) starting from the currently
 	// selected item, up the hierarchy
 	NSInteger row = [outlineView selectedRow];
@@ -338,12 +430,6 @@ objectValueForTableColumn:(NSTableColumn *)tableColumn
 		parentNode = [parentNode parentNode];
 	}
 	
-	if (! parentNode) {
-		row = 0;
-		parentNode = [outlineView itemAtRow:0];
-	}
-	else row = [outlineView rowForItem:parentNode];
-	
 	NSAssert(row >= 0, @"addRow: row < 0");
 	
 	NodeObject *parentObject = [parentNode representedObject];
@@ -351,7 +437,8 @@ objectValueForTableColumn:(NSTableColumn *)tableColumn
 	if (! [parentObject typeIsCollection]) return;
 	
 	NodeObject *newObject = [[NodeObject alloc] initWithValue:@""];
-	
+    newObject.undoManager = doc.undoManager;
+    
 	// Rows belonging to a dictionary need a key. Find a key that doesn't exist yet
 	if (parentObject.type == kNodeObjectTypeDictionary) {
 		NSUInteger i = 0;
@@ -373,50 +460,30 @@ objectValueForTableColumn:(NSTableColumn *)tableColumn
 	}
 	
 	NSTreeNode *newNode = [[NSTreeNode alloc] initWithRepresentedObject:newObject];
-	[[parentNode mutableChildNodes] addObject:newNode];
-	[outlineView reloadItem:parentNode reloadChildren:YES];
-	[outlineView expandItem:parentNode];
-	
-	NSInteger columnToEdit = (parentObject.type == kNodeObjectTypeDictionary && (! editValueColumnOnly)) ? 0 : 2;
-	NSInteger childRow = row + [[parentNode childNodes] count];
-	
-	[outlineView selectRowIndexes:[NSIndexSet indexSetWithIndex:childRow] byExtendingSelection:NO];
-	[outlineView editColumn:columnToEdit row:childRow withEvent:nil select:YES];
-	
-	[self resizeView:nil];
-	
-	Document *doc = [self representedObject];
+    [self insertNode:newNode toParentNode:parentNode atIndex:NSIntegerMax];
+    
+    NSUInteger rowToSelect = [outlineView rowForItem:newNode];
+    [outlineView selectRowIndexes:[NSIndexSet indexSetWithIndex:rowToSelect] byExtendingSelection:NO];
+
+    NSInteger columnToEdit = (parentObject.type == kNodeObjectTypeDictionary && (! editValueColumnOnly)) ? 0 : 2;
+    [outlineView editColumn:columnToEdit row:rowToSelect withEvent:nil select:YES];
+
 	[doc updateChangeCount:NSChangeDone];
+    [self resizeView:nil];
 }
 
+
 - (IBAction)deleteRow:(id)sender {
-	Document *doc = [self representedObject];
 	NSIndexSet *selectedIndexSet = [outlineView selectedRowIndexes];
 	
 	for (NSUInteger currentIndex = [selectedIndexSet firstIndex];
 		 currentIndex != NSNotFound;
 		 currentIndex = [selectedIndexSet indexGreaterThanIndex:currentIndex])
 	{
-		NSTreeNode *currentNode = [outlineView itemAtRow:currentIndex];
-		NSTreeNode *parentNode = [currentNode parentNode];
-		
-		if (! parentNode) { // removing the root object
-			[doc resetContents];
-			[outlineView reloadData];
-			[doc updateChangeCount:NSChangeDone];
-		}
-		else {
-			NSIndexPath *path = [currentNode indexPath];
-			NSUInteger position = [path indexAtPosition:[path length] - 1];
-			[[parentNode mutableChildNodes] removeObjectAtIndex:position];
-			[outlineView reloadItem:parentNode reloadChildren:YES];
-			[doc updateChangeCount:NSChangeDone];
-		}
+        NSTreeNode *currentNode = [outlineView itemAtRow:currentIndex];
+        NSTreeNode *parentNode = [currentNode parentNode];
+        [self deleteNode:currentNode fromParent:parentNode];
 	}
-	
-	[self resizeView:nil];
-	
-	// If only one row has been deleted, select the row that was below it
 	if ([selectedIndexSet count] == 1) {
 		[outlineView selectRowIndexes:[NSIndexSet indexSetWithIndex:[selectedIndexSet firstIndex]]
 				 byExtendingSelection:NO];
@@ -430,6 +497,16 @@ objectValueForTableColumn:(NSTableColumn *)tableColumn
 - (IBAction)toggleEditValueColumnOnly:(id)sender {
 	editValueColumnOnly = ! editValueColumnOnly;
 	[outlineView setNeedsDisplay:YES];
+}
+
+- (IBAction)editKey:(id)sender {
+    NSInteger selectedRow = outlineView.selectedRow;
+    [outlineView editColumn:0 row:selectedRow withEvent:nil select:YES];
+}
+
+- (IBAction)editValue:(id)sender {
+    NSInteger selectedRow = outlineView.selectedRow;
+    [outlineView editColumn:2 row:selectedRow withEvent:nil select:YES];
 }
 
 #pragma mark -
@@ -494,7 +571,7 @@ objectValueForTableColumn:(NSTableColumn *)tableColumn
 	 }
 	 else */
 	if (character == NSCarriageReturnCharacter) {
-		[self addRow:self];
+        [self editValue: self];
 		return YES;
 	}
 	
@@ -547,6 +624,89 @@ objectValueForTableColumn:(NSTableColumn *)tableColumn
 
 	
 	return NO;
+}
+
+#pragma mark -
+#pragma mark Copy-paste
+
+- (IBAction)copy:(id)sender {
+    
+    NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
+    
+    NSMutableArray *objectsToCopy = [NSMutableArray new];
+    NSIndexSet *selectedIndexSet = [outlineView selectedRowIndexes];
+    
+    for (NSUInteger currentIndex = [selectedIndexSet firstIndex];
+         currentIndex != NSNotFound;
+         currentIndex = [selectedIndexSet indexGreaterThanIndex:currentIndex])
+    {
+        NSTreeNode *currentNode = [outlineView itemAtRow:currentIndex];
+        NSString *string = [self.representedObject stringForNode:currentNode];
+        if (string.length > 0) {
+            [objectsToCopy addObject: string];
+        }
+    }
+    if (objectsToCopy.count > 0) {
+        [pasteboard clearContents];
+        [pasteboard writeObjects:objectsToCopy];
+    }
+}
+
+- (IBAction)paste:(id)sender {
+    NSError *error = nil;
+    NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
+    NSArray *classes = [NSArray arrayWithObject:[NSString class]];
+    NSDictionary *options = [NSDictionary dictionary];
+    
+    if (![pasteboard canReadObjectForClasses:classes options:options]) return;
+    
+    NSArray *objectsToPaste = [pasteboard readObjectsForClasses:classes options:options];
+    NSString *pasteboardString = [objectsToPaste objectAtIndex:0];
+    NSString *contentsToPaste;
+
+    if ([[pasteboardString substringToIndex:7] isEqualToString:@"http://"] || [[pasteboardString substringToIndex:8] isEqualToString:@"https://"]) {
+        NSURL *url = [NSURL URLWithString:pasteboardString];
+        contentsToPaste = [NSString stringWithContentsOfURL:url encoding:NSUTF8StringEncoding error:&error];
+        if (nil != error) {
+            [NSApp presentError:error];
+            return;
+        }
+    }
+    else {
+        contentsToPaste = pasteboardString;
+    }
+    
+    SBJsonParser *parser = [SBJsonParser new];
+    id parsedContents = [parser objectWithString:contentsToPaste error:&error];
+    if (nil != error) {
+        [NSApp presentError:error];
+        return;
+    }
+    
+    if (nil != parsedContents) {
+        NSUInteger selectedRow = [outlineView selectedRow];
+        NSTreeNode *currentNode = [outlineView itemAtRow: selectedRow];
+        NSTreeNode *parrentNode = [currentNode parentNode];
+        
+        if (nil == parrentNode) {
+            Document *newDoc = [[NSDocumentController sharedDocumentController] openUntitledDocumentAndDisplay:NO error:&error];
+            if (error) {
+                [NSApp presentError:error];
+                return;
+            }
+            newDoc.contents = parsedContents;
+        }
+        
+        NSUInteger index = [[parrentNode childNodes] indexOfObject:currentNode] + 1;
+        Document *doc = self.representedObject;
+        NSTreeNode *newNode = [doc createNewTreeNodeWithContent:parsedContents];
+        if (1 == newNode.childNodes.count) {
+            [self insertNode:newNode.childNodes.lastObject toParentNode:parrentNode atIndex:index];
+        }
+        else {
+            [self insertNode:newNode toParentNode:parrentNode atIndex:index];
+        }
+    }
 }
 
 @end

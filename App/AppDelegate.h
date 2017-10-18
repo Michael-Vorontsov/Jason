@@ -39,6 +39,5 @@
 
 - (IBAction)openFromURL:(id)sender;
 - (IBAction)showPreferencesPanel:(id)sender;
-- (IBAction)paste:(id)sender;
 
 @end

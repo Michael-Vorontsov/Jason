@@ -40,7 +40,6 @@
 	BOOL parseErrorHasBeenShown;
 }
 
-- (IBAction)copy:(id)sender;
 - (IBAction)toggleViewTableText:(id)sender;
 
 @end

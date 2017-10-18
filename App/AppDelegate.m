@@ -45,46 +45,6 @@
 	[preferencesWC showWindow:self];
 }
 
-- (IBAction)paste:(id)sender {
-	NSError *error = nil;
-	NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
-	NSArray *classes = [NSArray arrayWithObject:[NSString class]];
-	NSDictionary *options = [NSDictionary dictionary];
-	
-	if (! [pasteboard canReadObjectForClasses:classes options:options]) return;
-	
-	NSArray *objectsToPaste = [pasteboard readObjectsForClasses:classes options:options];
-	NSString *pasteboardString = [objectsToPaste objectAtIndex:0];
-	NSString *contentsToPaste;
-	
-	if ([[pasteboardString substringToIndex:7] isEqualToString:@"http://"]) {
-		NSURL *url = [NSURL URLWithString:pasteboardString];
-		contentsToPaste = [NSString stringWithContentsOfURL:url encoding:NSUTF8StringEncoding error:&error];
-		if (error) {
-			[NSApp presentError:error];
-			return;
-		}
-	}
-	else contentsToPaste = pasteboardString;
-	
-	SBJsonParser *parser = [SBJsonParser new];
-	id parsedContents = [parser objectWithString:contentsToPaste error:&error];
-	if (error) {
-		[NSApp presentError:error];
-		return;
-	}
-	
-	if (parsedContents) {
-		Document *newDoc = [[NSDocumentController sharedDocumentController] openUntitledDocumentAndDisplay:NO error:&error];
-		if (error) {
-			[NSApp presentError:error];
-			return;
-		}
-		
-		newDoc.contents = parsedContents;
-	}
-}
-
 - (BOOL)validateUserInterfaceItem:(id <NSValidatedUserInterfaceItem>)item {
     if ([item action] == @selector(paste:)) {
         NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];

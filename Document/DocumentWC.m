@@ -132,16 +132,6 @@
 }
 
 #pragma mark -
-#pragma mark Pasteboard
-
-- (IBAction)copy:(id)sender {
-	Document *doc = [self document];
-	NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
-	[pasteboard clearContents];
-	[pasteboard writeObjects:[NSArray arrayWithObject:[doc stringRepresentation]]];
-}
-
-#pragma mark -
 #pragma mark User Interface Validation
 
 - (BOOL)validateUserInterfaceItem:(id <NSValidatedUserInterfaceItem>)item {

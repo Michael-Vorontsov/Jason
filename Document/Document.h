@@ -44,6 +44,8 @@
 @property id contents;
 
 - (NSString *)stringRepresentation;
+- (NSString *)stringForNode: (NSTreeNode *)node;
 - (void)resetContents;
+- (NSTreeNode *)createNewTreeNodeWithContent:(id)contents;
 
 @end

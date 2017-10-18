@@ -47,8 +47,9 @@ typedef enum {
 - (id)initWithValue:(id)theValue;
 - (BOOL)typeIsCollection;
 
-@property (copy) NSString *key;
+@property (copy, nonatomic) NSString *key;
 @property NodeObjectType type;
-@property id value;
+@property (strong, nonatomic) id value;
+@property (weak, nonatomic) NSUndoManager *undoManager;
 
 @end
