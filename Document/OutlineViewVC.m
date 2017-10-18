@@ -38,7 +38,6 @@
 @interface OutlineViewVC ()
 - (BOOL)outlineView:(NSOutlineView *)theView shouldEditTableColumn:(NSTableColumn *)tableColumn item:(id)item;
 - (void)refreshView;
-//@property (nonatomic, readonly, strong) NSUndoManager *undoManager;
 - (void)changeTypeTo:(NSUInteger)newType forIndexSet:(NSIndexSet *)indexSet;
 
 @end
@@ -52,7 +51,6 @@ static NSNumberFormatter *numberFormatter = nil;
 @synthesize keyColumn;
 @synthesize typeColumn;
 @synthesize valueColumn;
-//@synthesize undoManager = _undoManager;
 
 + (void)initialize {
 	numberFormatter = [NSNumberFormatter new];
@@ -91,25 +89,10 @@ static NSNumberFormatter *numberFormatter = nil;
     disabledValueCell = [[valueColumn dataCell] copy];
     [disabledValueCell setEnabled:NO];
     [disabledValueCell setEditable:NO];
-    //[(NSTextFieldCell *)disabledValueCell setTextColor:[NSColor darkGrayColor]];
-    
-    // Insert ourselves between the outline view and its next responder
-    // in the responder chain
-    NSResponder *nextResponder = [outlineView nextResponder];
-    [outlineView setNextResponder:self];
-    [self setNextResponder:nextResponder];
     
     [outlineView sizeLastColumnToFit];
     Document *doc = [self representedObject];
     NSLog(@"%i", [doc hasUndoManager]);
-    // We want to be notified when the window resizes because the outline
-    // view changes its size according to its contents
-    [[NSNotificationCenter defaultCenter]
-     addObserver:self
-     selector:@selector(resizeView:)
-     name:NSWindowDidResizeNotification
-     object:[[self view] window]
-    ];
 
     [[NSNotificationCenter defaultCenter]
      addObserver:self
@@ -139,23 +122,6 @@ static NSNumberFormatter *numberFormatter = nil;
 
 #pragma mark -
 #pragma mark Notifications handlers
-
-- (void)resizeView:(NSNotification *)notification {
-	const CGFloat margin = 0.0;
-	const CGFloat doubleMargin = margin + margin;
-	
-	NSSize contentViewSize = [[[[self view] window] contentView] frame].size;
-	CGFloat outlineViewMaxHeight = contentViewSize.height - doubleMargin;
-	CGFloat usedHeight = [[outlineView headerView] frame].size.height +
-	[outlineView numberOfRows] * ([outlineView rowHeight] + [outlineView intercellSpacing].height);
-	
-	if (usedHeight < outlineViewMaxHeight) {
-		[outlineScrollView setFrameSize:NSMakeSize(contentViewSize.width - doubleMargin, usedHeight)];
-		[outlineScrollView setFrameOrigin:NSMakePoint(margin,
-													  outlineViewMaxHeight - usedHeight + margin)];
-		[outlineScrollView setNeedsDisplay:YES];
-	}
-}
 
 - (void)didReciveUndoNotification:(NSNotification *)aNotification {
     [outlineView reloadData];
@@ -391,7 +357,6 @@ objectValueForTableColumn:(NSTableColumn *)tableColumn
         [outlineView reloadItem:parentNode reloadChildren:YES];
         [doc updateChangeCount:NSChangeDone];
     }
-    [self resizeView:nil];
     
 }
 
@@ -411,7 +376,6 @@ objectValueForTableColumn:(NSTableColumn *)tableColumn
     [outlineView reloadItem:parentNode reloadChildren:YES];
     [outlineView expandItem:parentNode];
     
-    [self resizeView:nil];
 }
 
 
@@ -424,6 +388,9 @@ objectValueForTableColumn:(NSTableColumn *)tableColumn
 	// Search for a collection (array, dictionary) starting from the currently
 	// selected item, up the hierarchy
 	NSInteger row = [outlineView selectedRow];
+    if (row < 0 || row > outlineView.numberOfRows) {
+        row = 0;
+    }
 	NSTreeNode *parentNode = [outlineView itemAtRow:row];
 	
 	while (parentNode && ! [(NodeObject *)[parentNode representedObject] typeIsCollection]) {
@@ -469,7 +436,6 @@ objectValueForTableColumn:(NSTableColumn *)tableColumn
     [outlineView editColumn:columnToEdit row:rowToSelect withEvent:nil select:YES];
 
 	[doc updateChangeCount:NSChangeDone];
-    [self resizeView:nil];
 }
 
 

@@ -61,6 +61,5 @@
 - (IBAction)copy:(id)sender;
 - (IBAction)paste:(id)sender;
 
-- (void)resizeView:(NSNotification *)notification;
 
 @end

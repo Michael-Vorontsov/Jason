@@ -77,7 +77,6 @@
 	[self setCurrentVC:outlineViewVC];
 	// We need to send resizeView: so that the scroll view containing the outline view
 	// is possibly shrunk according to its contents
-	[outlineViewVC resizeView:nil];
 }
 
 - (void)loadTextViewWithString:(NSString *)string {
