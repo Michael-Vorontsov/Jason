@@ -494,7 +494,6 @@ objectValueForTableColumn:(NSTableColumn *)tableColumn
     Document *doc = self.representedObject;
     for (NSTreeNode* each in draggedItems) {
         [stringToDrag appendString: [doc stringForNode:each]];
-//        [self deleteNode:each fromParent:each.parentNode];
     }
     
     [session.draggingPasteboard setString:stringToDrag forType:NSPasteboardTypeString];
@@ -502,31 +501,15 @@ objectValueForTableColumn:(NSTableColumn *)tableColumn
 
 - (void)outlineView:(NSOutlineView *)outlineView draggingSession:(NSDraggingSession *)session endedAtPoint:(NSPoint)screenPoint operation:(NSDragOperation)operation {
     {
-//        Document *doc = self.representedObject;
-
-        
         switch (operation) {
             case NSDragOperationMove:
             case NSDragOperationGeneric:
             case NSDragOperationDelete: {
-                //        [self.outlineView beginUpdates];
                 [self.dragItems
                  enumerateObjectsWithOptions:NSEnumerationReverse
                  usingBlock:^(NSTreeNode *node, NSUInteger index, BOOL *stop) {
                      [self deleteNode:node fromParent:node.parentNode];
-//                     id parent = [node parentNode];
-//                     NSMutableArray *children = [parent mutableChildNodes];
-//                     NSInteger childIndex = [children indexOfObject:node];
-//                     [children removeObjectAtIndex:childIndex];
-//
-//                     [self.outlineView
-//                      removeItemsAtIndexes:[NSIndexSet indexSetWithIndex:childIndex]
-//                      inParent:parent ==  doc.rootNode ? nil : parent
-//                      withAnimation:NSTableViewAnimationEffectFade
-//                      ];
                  }];
-                
-//                [self.outlineView endUpdates];
                 break;
             }
             default:
@@ -694,7 +677,6 @@ objectValueForTableColumn:(NSTableColumn *)tableColumn
 	// ...and Backtab (should skip to the previous focusable column, possibly at a previous row)
 	else if (command == @selector(insertBacktab:)) {
 		NSUInteger lastColumn = [[outlineView tableColumns] count] - 1;
-//		NSInteger columnIndex = outlineView.lastFocusedColumn - 1;
 		NSInteger columnIndex = [outlineView focusedColumn] - 1;
 		
 		NSLog(@"back tabbing, first candidate = %ld", columnIndex);
