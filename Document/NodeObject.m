@@ -52,7 +52,7 @@
 	if ([value isKindOfClass:[NSDictionary class]]) return kNodeObjectTypeDictionary;
 	else if ([value isKindOfClass:[NSArray class]]) return kNodeObjectTypeArray;
 	else if ([value isKindOfClass:[NSString class]]) return kNodeObjectTypeString;
-	else if ([[value className] isEqualToString:@"NSCFBoolean"]) return kNodeObjectTypeBool;
+	else if ([[value className] containsString:@"Boolean"]) return kNodeObjectTypeBool;
 	else if ([value isKindOfClass:[NSNumber class]]) return kNodeObjectTypeNumber;
 
 	return kNodeObjectTypeNull;
@@ -87,7 +87,7 @@
 		}
 	}
 	// From boolean to...
-	else if ([[value className] isEqualToString:@"NSCFBoolean"]) {
+	else if ([[value className] containsString:@"Boolean"]) {
 		BOOL boolValue = [(NSNumber *)value boolValue];
 		
 		if (newType == kNodeObjectTypeString) { // from boolean to string

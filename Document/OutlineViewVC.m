@@ -40,6 +40,7 @@
 - (void)refreshView;
 - (void)changeTypeTo:(NSUInteger)newType forIndexSet:(NSIndexSet *)indexSet;
 
+@property (nonatomic, strong) NSMutableSet *subscriptions;
 @end
 
 @implementation OutlineViewVC
@@ -94,19 +95,28 @@ static NSNumberFormatter *numberFormatter = nil;
     Document *doc = [self representedObject];
     NSLog(@"%i", [doc hasUndoManager]);
 
-    [[NSNotificationCenter defaultCenter]
-     addObserver:self
-     selector:@selector(didReciveUndoNotification:)
-     name:NSUndoManagerDidUndoChangeNotification
-     object:nil];
-
-    [[NSNotificationCenter defaultCenter]
-     addObserver:self
-     selector:@selector(didReciveUndoNotification:)
-     name:NSUndoManagerDidRedoChangeNotification
-     object:nil
+    NSNotificationCenter * _Nonnull notificationCenter = [NSNotificationCenter defaultCenter];
+    
+    [self.subscriptions addObject:
+     [notificationCenter
+      addObserverForName:NSUndoManagerDidUndoChangeNotification
+      object:nil
+      queue:[NSOperationQueue mainQueue]
+      usingBlock:^(NSNotification * _Nonnull note) {
+        [outlineView reloadData];
+      }]
     ];
 
+    [self.subscriptions addObject:
+     [notificationCenter
+      addObserverForName:NSUndoManagerDidRedoChangeNotification
+      object:nil
+      queue:[NSOperationQueue mainQueue]
+      usingBlock:^(NSNotification * _Nonnull note) {
+          [outlineView reloadData];
+      }]
+     ];
+    
     [super viewDidLoad];
 }
 
@@ -118,13 +128,6 @@ static NSNumberFormatter *numberFormatter = nil;
 - (void)refreshView {
 	[outlineView reloadData];
 	[outlineView expandItem:[outlineView itemAtRow:0] expandChildren:YES];	
-}
-
-#pragma mark -
-#pragma mark Notifications handlers
-
-- (void)didReciveUndoNotification:(NSNotification *)aNotification {
-    [outlineView reloadData];
 }
 
 #pragma mark -
