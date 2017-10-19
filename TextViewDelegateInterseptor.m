@@ -3,17 +3,13 @@
 //  Jason
 //
 //  Created by Mykhailo Vorontsov on 18/10/2017.
-//  Copyright © 2017 Olivier Labs. All rights reserved.
 //
 
 #import "TextViewDelegateInterseptor.h"
 
 @interface TextViewDelegateInterseptor()
-
 @property (nonatomic, strong) NSPointerArray *delegates;
-
 @end
-
 
 @implementation TextViewDelegateInterseptor
 
@@ -31,11 +27,8 @@
 }
 
 - (BOOL)respondsToSelector:(SEL)aSelector {
-    NSString *str = NSStringFromSelector(aSelector);
-    
     for (id<NSTextViewDelegate> each in self.delegates.allObjects) {
         if (YES == [each respondsToSelector: aSelector]) {
-            NSLog(@"can responds to: %@", str);
             return YES;
         }
     }
@@ -48,10 +41,6 @@
     for (id<NSTextViewDelegate> each in self.delegates.allObjects) {
         
         if ([each respondsToSelector: [anInvocation selector]]) {
-            NSString *str = NSStringFromSelector([anInvocation selector]);
-            
-            NSLog(@"responding to: %@", str);
-            
             [anInvocation invokeWithTarget:each];
             // If delegate method consider returning object - it means only on delegate should be called.
             if ([[anInvocation methodSignature] methodReturnLength] > 0) {

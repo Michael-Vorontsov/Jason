@@ -766,7 +766,7 @@ objectValueForTableColumn:(NSTableColumn *)tableColumn
     if (![pasteboard canReadObjectForClasses:classes options:options]) return;
     
     NSArray *objectsToPaste = [pasteboard readObjectsForClasses:classes options:options];
-    NSString *pasteboardString = [objectsToPaste objectAtIndex:0];
+    NSString *pasteboardString = [[objectsToPaste objectAtIndex:0] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
     NSString *contentsToPaste;
 
     if ([[pasteboardString substringToIndex:7] isEqualToString:@"http://"] || [[pasteboardString substringToIndex:8] isEqualToString:@"https://"]) {
@@ -780,12 +780,17 @@ objectValueForTableColumn:(NSTableColumn *)tableColumn
     else {
         contentsToPaste = pasteboardString;
     }
-    
     SBJsonParser *parser = [SBJsonParser new];
     id parsedContents = [parser objectWithString:contentsToPaste error:&error];
     if (nil != error) {
-        [NSApp presentError:error];
-        return;
+        error = nil;
+        // Try to remove trailing semicolons and  wrap content into brackets
+        contentsToPaste = [NSString stringWithFormat:@"{\n%@\n}", [contentsToPaste stringByTrimmingCharactersInSet:[NSCharacterSet characterSetWithCharactersInString:@",;"]]];
+        parsedContents = [parser objectWithString:contentsToPaste error:&error];
+        if (nil != error) {
+            [NSApp presentError:error];
+            return;
+        }
     }
     
     if (nil != parsedContents) {
