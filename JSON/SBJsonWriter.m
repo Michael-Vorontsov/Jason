@@ -83,7 +83,7 @@ static NSMutableCharacterSet *kEscapeChars;
 }
 
 - (NSString*)indent {
-    return [@"\n" stringByPaddingToLength:1 + 2 * depth withString:@" " startingAtIndex:0];
+    return [@"\n" stringByPaddingToLength:1 + 3 * depth withString:@" " startingAtIndex:0];
 }
 
 - (BOOL)appendValue:(id)fragment into:(NSMutableString*)json {
@@ -146,9 +146,13 @@ static NSMutableCharacterSet *kEscapeChars;
             return NO;
         }
     }
-    
+    // If array is empty
+    if (fragment.count < 1) {
+        [json appendString:@"\n"];
+    }
+
     depth--;
-    if ([self humanReadable] && [fragment count])
+    if ([self humanReadable])
         [json appendString:[self indent]];
     [json appendString:@"]"];
     return YES;
@@ -161,7 +165,7 @@ static NSMutableCharacterSet *kEscapeChars;
     }
     [json appendString:@"{"];
     
-    NSString *colon = [self humanReadable] ? @" : " : @":";
+    NSString *colon = [self humanReadable] ? @":" : @":";
     BOOL addComma = NO;
     NSArray *keys = [fragment allKeys];
     if (self.sortKeys)
@@ -190,9 +194,13 @@ static NSMutableCharacterSet *kEscapeChars;
             return NO;
         }
     }
+    // If dictionary is empty
+    if (keys.count < 1) {
+        [json appendString:@"\n"];
+    }
     
     depth--;
-    if ([self humanReadable] && [fragment count])
+    if ([self humanReadable])
         [json appendString:[self indent]];
     [json appendString:@"}"];
     return YES;    
