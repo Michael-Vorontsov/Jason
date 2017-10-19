@@ -37,7 +37,6 @@
 #import "AutocompletionPool.h"
 #import "TextViewDelegateInterseptor.h"
 
-
 @interface OutlineViewVC ()
 - (void)refreshView;
 - (void)changeTypeTo:(NSUInteger)newType forIndexSet:(NSIndexSet *)indexSet;

@@ -28,13 +28,14 @@
  */
 
 #import "SBJsonParser.h"
+#import "OrderedDictionary.h"
 
 @interface SBJsonParser ()
 
 - (BOOL)scanValue:(NSObject **)o;
 
 - (BOOL)scanRestOfArray:(NSMutableArray **)o;
-- (BOOL)scanRestOfDictionary:(NSMutableDictionary **)o;
+- (BOOL)scanRestOfDictionary:(MutableOrderedDictionary **)o;
 - (BOOL)scanRestOfNull:(NSNull **)o;
 - (BOOL)scanRestOfFalse:(NSNumber **)o;
 - (BOOL)scanRestOfTrue:(NSNumber **)o;
@@ -71,12 +72,12 @@
 	
     if (!errorTrace) {
         errorTrace = [NSMutableArray new];
-        userInfo = [NSDictionary dictionaryWithObjectsAndKeys:str, NSLocalizedDescriptionKey,
+        userInfo = [OrderedDictionary dictionaryWithObjectsAndKeys:str, NSLocalizedDescriptionKey,
 					errorPositionObj, @"JasonErrorPosition",
 					lineBreakPositionObj, @"JasonLineBreakPosition",
 					 nil];
     } else {
-        userInfo = [NSDictionary dictionaryWithObjectsAndKeys:
+        userInfo = [OrderedDictionary dictionaryWithObjectsAndKeys:
                     str, NSLocalizedDescriptionKey,
                     [errorTrace lastObject], NSUnderlyingErrorKey,
 					errorPositionObj, @"JasonErrorPosition",
@@ -157,7 +158,7 @@ static char ctrl[0x22];
     
     switch (*c++) {
         case '{':
-            return [self scanRestOfDictionary:(NSMutableDictionary **)o];
+            return [self scanRestOfDictionary:(MutableOrderedDictionary **)o];
             break;
         case '[':
             return [self scanRestOfArray:(NSMutableArray **)o];
@@ -267,14 +268,14 @@ static char ctrl[0x22];
     return NO;
 }
 
-- (BOOL)scanRestOfDictionary:(NSMutableDictionary **)o 
+- (BOOL)scanRestOfDictionary:(MutableOrderedDictionary **)o 
 {
     if (maxDepth && ++depth > maxDepth) {
         [self addErrorWithCode:EDEPTH description: @"Nested too deep"];
         return NO;
     }
     
-    *o = [NSMutableDictionary dictionaryWithCapacity:7];
+    *o = [MutableOrderedDictionary dictionaryWithCapacity:7];
     
     for (; *c ;) {
         id k, v;

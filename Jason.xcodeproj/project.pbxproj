@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		097AE9861F97640000089C33 /* AutocompletionPool.m in Sources */ = {isa = PBXBuildFile; fileRef = 097AE9851F97640000089C33 /* AutocompletionPool.m */; };
 		097AE98B1F97C55200089C33 /* TextViewDelegateInterseptor.m in Sources */ = {isa = PBXBuildFile; fileRef = 097AE98A1F97C55200089C33 /* TextViewDelegateInterseptor.m */; };
+		097AE9991F98B08800089C33 /* OrderedDictionary.m in Sources */ = {isa = PBXBuildFile; fileRef = 097AE9981F98B08800089C33 /* OrderedDictionary.m */; };
 		1418D026125D61D10040CBB6 /* DocumentWC.m in Sources */ = {isa = PBXBuildFile; fileRef = 1418D025125D61D10040CBB6 /* DocumentWC.m */; };
 		1418D029125D61EB0040CBB6 /* NodeObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 1418D028125D61EB0040CBB6 /* NodeObject.m */; };
 		142FB6811272BEBE00EE4328 /* OutlineView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 142FB6801272BEBE00EE4328 /* OutlineView.xib */; };
@@ -56,6 +57,8 @@
 		097AE9851F97640000089C33 /* AutocompletionPool.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AutocompletionPool.m; sourceTree = "<group>"; };
 		097AE9891F97C55200089C33 /* TextViewDelegateInterseptor.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TextViewDelegateInterseptor.h; sourceTree = "<group>"; };
 		097AE98A1F97C55200089C33 /* TextViewDelegateInterseptor.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TextViewDelegateInterseptor.m; sourceTree = "<group>"; };
+		097AE9971F98B08800089C33 /* OrderedDictionary.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OrderedDictionary.h; sourceTree = "<group>"; };
+		097AE9981F98B08800089C33 /* OrderedDictionary.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OrderedDictionary.m; sourceTree = "<group>"; };
 		0A4183721938322900FB18D6 /* Jason.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Jason.pch; path = Support/Jason.pch; sourceTree = "<group>"; };
 		1058C7A7FEA54F5311CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
 		1418D024125D61D10040CBB6 /* DocumentWC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DocumentWC.h; path = Document/DocumentWC.h; sourceTree = "<group>"; };
@@ -117,6 +120,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		097AE9961F98B08800089C33 /* OrderedDictionary */ = {
+			isa = PBXGroup;
+			children = (
+				097AE9971F98B08800089C33 /* OrderedDictionary.h */,
+				097AE9981F98B08800089C33 /* OrderedDictionary.m */,
+			);
+			path = OrderedDictionary;
+			sourceTree = "<group>";
+		};
 		1058C7A6FEA54F5311CA2CBB /* Linked Frameworks */ = {
 			isa = PBXGroup;
 			children = (
@@ -229,6 +241,7 @@
 		2A37F4ABFDCFA73011CA2CEA /* Classes */ = {
 			isa = PBXGroup;
 			children = (
+				097AE9961F98B08800089C33 /* OrderedDictionary */,
 				1433032E1265AB860086DD35 /* Preferences */,
 				14E795C1125BBA87006EC2F6 /* JSON */,
 				14E795BA125BBA28006EC2F6 /* Document */,
@@ -364,6 +377,7 @@
 				14E795CF125BBA96006EC2F6 /* SBJsonBase.m in Sources */,
 				14E795D0125BBA96006EC2F6 /* SBJsonParser.m in Sources */,
 				14E795D1125BBA96006EC2F6 /* SBJsonWriter.m in Sources */,
+				097AE9991F98B08800089C33 /* OrderedDictionary.m in Sources */,
 				14E795D3125BBAAC006EC2F6 /* main.m in Sources */,
 				097AE9861F97640000089C33 /* AutocompletionPool.m in Sources */,
 				1495F31B125CEA69008DA431 /* AppDelegate.m in Sources */,

@@ -31,6 +31,7 @@
 #import "DocumentWC.h"
 #import "JSON.h"
 #import "NodeObject.h"
+#import "OrderedDictionary.h"
 
 @interface Document ()
 - (void)readChildrenOf:(NSTreeNode *)parentNode;
@@ -59,7 +60,7 @@
 #pragma mark Tree/object/string representation
 
 - (void)resetContents {
-	self.contents = [NSMutableDictionary new];
+	self.contents = [MutableOrderedDictionary new];
 }
 
 - (void)setContents:(id)contents {
@@ -91,7 +92,7 @@
     [self writeChildrenOf:node toObject:contents];
     if (nil != node.parentNode) {
         NSString *key = (nil != rootObject.key) ? rootObject.key : @"";
-        contents = @{key : contents };
+        contents = [OrderedDictionary dictionaryWithDictionary:@{key : contents }];
     }
 
     return contents;
@@ -117,9 +118,10 @@
 		// We don't need the children in the original array because NSTreeNode::childNodes already keeps those
 		[parentArray removeAllObjects];
 	}
-	else if ([parentObject isKindOfClass:[NSMutableDictionary class]]) {
-		NSMutableDictionary *parentDict = parentObject;
-		for (NSString *key in [[parentDict allKeys] sortedArrayUsingSelector:@selector(localizedCaseInsensitiveCompare:)]) {
+	else if ([parentObject isKindOfClass:[MutableOrderedDictionary class]]) {
+		MutableOrderedDictionary *parentDict = parentObject;
+//        for (NSString *key in [[parentDict allKeys] sortedArrayUsingSelector:@selector(localizedCaseInsensitiveCompare:)]) {
+        for (NSString *key in [parentDict allKeys]) {
 			// Add a node for the child...
 			NodeObject *childObject = [[NodeObject alloc] initWithKey:key value:[parentDict objectForKey:key]];
             childObject.undoManager = self.undoManager;
@@ -143,7 +145,7 @@
 - (NSString *)stringForNode:(NSTreeNode *)node {
     SBJsonWriter *parser = [SBJsonWriter new];
     parser.humanReadable = YES;
-    parser.sortKeys = YES;
+    parser.sortKeys = NO;
     NodeObject *nodeObject = node.representedObject;
     NSString *contentString = [parser stringWithObject:[self contentForNode:node]];
     if (nil == contentString) {
@@ -170,7 +172,7 @@
         }
         
         case kNodeObjectTypeDictionary: {
-            NSMutableDictionary *dict = object;
+            MutableOrderedDictionary *dict = object;
             for (NSTreeNode *childNode in [parentNode childNodes]) {
                 // Add the child object...
                 NodeObject *childObject = [childNode representedObject];

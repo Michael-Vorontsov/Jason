@@ -28,6 +28,8 @@
  */
 
 #import "SBJsonBase.h"
+#import "OrderedDictionary.h"
+
 NSString * SBJSONErrorDomain = @"org.brautaset.JSON.ErrorDomain";
 
 
@@ -48,10 +50,10 @@ NSString * SBJSONErrorDomain = @"org.brautaset.JSON.ErrorDomain";
     NSDictionary *userInfo;
     if (!errorTrace) {
         errorTrace = [NSMutableArray new];
-        userInfo = [NSDictionary dictionaryWithObject:str forKey:NSLocalizedDescriptionKey];
+        userInfo = [OrderedDictionary dictionaryWithObject:str forKey:NSLocalizedDescriptionKey];
         
     } else {
-        userInfo = [NSDictionary dictionaryWithObjectsAndKeys:
+        userInfo = [OrderedDictionary dictionaryWithObjectsAndKeys:
                     str, NSLocalizedDescriptionKey,
                     [errorTrace lastObject], NSUnderlyingErrorKey,
                     nil];

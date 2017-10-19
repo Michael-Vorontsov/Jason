@@ -29,6 +29,7 @@
 
 #import "NodeObject.h"
 #import "AutocompletionPool.h"
+#import "OrderedDictionary.h"
 
 @implementation NodeObject
 
@@ -117,7 +118,7 @@
 	// that's not based on the old value
 	if (! newValue) {
 		switch (newType) {
-			case kNodeObjectTypeDictionary: newValue = [NSMutableDictionary new]; break;
+			case kNodeObjectTypeDictionary: newValue = [MutableOrderedDictionary new]; break;
 			case kNodeObjectTypeArray: newValue = [NSMutableArray new]; break;
 			case kNodeObjectTypeString: newValue = @""; break;
 			case kNodeObjectTypeNumber: newValue = [NSDecimalNumber numberWithInt:0]; break;
