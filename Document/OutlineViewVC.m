@@ -196,8 +196,8 @@ static NSNumberFormatter *numberFormatter = nil;
         if (nil == self.textEditorDelegateInterseptor) {
             self.textEditorDelegateInterseptor = [TextViewDelegateInterseptor new];
         }
-        [self.textEditorDelegateInterseptor addDelegate: textEditor.delegate];
         [self.textEditorDelegateInterseptor addDelegate: self];
+        [self.textEditorDelegateInterseptor addDelegate: textEditor.delegate];
         textEditor.delegate = self.textEditorDelegateInterseptor;
     }
 
@@ -231,15 +231,17 @@ objectValueForTableColumn:(NSTableColumn *)tableColumn
 		   byItem:(id)item
 {
 	NSTreeNode *node = item;
+    NSTreeNode *parentNode = [node parentNode];
 	NodeObject *object = [node representedObject];
-	
+    NodeObject *parentObject = [parentNode representedObject];
+
 	/***** Key column *****/
 	if (tableColumn == keyColumn) {
 		// The root object has a literal key
-		if (! [outlineView parentForItem:item]) return NSLocalizedString(@"Root", @"");
+		if (nil == parentNode) return NSLocalizedString(@"Root", @"");
 		
 		// If it belongs to a dictionary, return its key
-		if (object.key) return object.key;
+		if (parentObject.type == kNodeObjectTypeDictionary && nil != object.key) return object.key;
 		
 		// If it doesn't belong to a dictionary then it belongs to an array. Return its position within the array
 		NSIndexPath *indexPath = [node indexPath];

@@ -91,7 +91,7 @@
     id contents = rootObject.value;
     [self writeChildrenOf:node toObject:contents];
     if (nil != node.parentNode) {
-        NSString *key = (nil != rootObject.key) ? rootObject.key : @"";
+        NSString *key = (nil != rootObject.key) ? rootObject.key : @"Item";
         contents = [OrderedDictionary dictionaryWithDictionary:@{key : contents }];
     }
 
@@ -159,6 +159,7 @@
 	
     switch (parentObject.type) {
         case kNodeObjectTypeArray: {
+            parentObject.value = [NSMutableArray new];
             NSMutableArray *array = object;
             for (NSTreeNode *childNode in [parentNode childNodes]) {
                 // Add the child object...
@@ -172,6 +173,7 @@
         }
         
         case kNodeObjectTypeDictionary: {
+            parentObject.value = [MutableOrderedDictionary new];
             MutableOrderedDictionary *dict = object;
             for (NSTreeNode *childNode in [parentNode childNodes]) {
                 // Add the child object...

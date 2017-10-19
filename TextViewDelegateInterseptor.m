@@ -10,23 +10,23 @@
 
 @interface TextViewDelegateInterseptor()
 
-@property (nonatomic, strong) NSHashTable *delegates;
+@property (nonatomic, strong) NSPointerArray *delegates;
 
 @end
 
 
 @implementation TextViewDelegateInterseptor
 
-- (NSHashTable *)delegates {
+- (NSPointerArray *)delegates {
     if (nil == _delegates) {
-        _delegates = [NSHashTable weakObjectsHashTable];
+        _delegates = [NSPointerArray weakObjectsPointerArray];
     }
     return _delegates;
 }
 
 - (void)addDelegate: (id<NSTextViewDelegate>)delegate {
     if (delegate != self) {
-        [self.delegates addObject:delegate];
+        [self.delegates addPointer: (__bridge void * _Nullable)(delegate)];
     }
 }
 
@@ -53,7 +53,10 @@
             NSLog(@"responding to: %@", str);
             
             [anInvocation invokeWithTarget:each];
-            return;
+            // If delegate method consider returning object - it means only on delegate should be called.
+            if ([[anInvocation methodSignature] methodReturnLength] > 0) {
+                return;
+            }
             forwarded = YES;
         }
     }
