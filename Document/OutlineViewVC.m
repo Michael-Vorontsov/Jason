@@ -541,6 +541,7 @@ objectValueForTableColumn:(NSTableColumn *)tableColumn
                  enumerateObjectsWithOptions:NSEnumerationReverse
                  usingBlock:^(NSTreeNode *node, NSUInteger index, BOOL *stop) {
                      [self.document deleteNode:node fromParent:node.parentNode];
+                     [self.outlineView reloadItem: node.parentNode reloadChildren:YES];
                  }];
                 break;
             }
@@ -553,14 +554,12 @@ objectValueForTableColumn:(NSTableColumn *)tableColumn
 }
 
 - (NSDragOperation)outlineView:(NSOutlineView *)ov validateDrop:(id <NSDraggingInfo>)info proposedItem:(id)item proposedChildIndex:(NSInteger)childIndex {
-    return NSDragOperationGeneric;
+    return NSDragOperationMove;
 }
 
 - (BOOL)outlineView:(NSOutlineView *)ov acceptDrop:(id <NSDraggingInfo>)info item:(id)item childIndex:(NSInteger)childIndex {
     NSTreeNode *node = (NSTreeNode *)item;
-//    NodeObject *itemObject = [node representedObject];
     switch ([self.document typeForNode: node]) {
-            
         case kNodeObjectTypeDictionary:
             break;
         case kNodeObjectTypeArray:
@@ -600,6 +599,9 @@ objectValueForTableColumn:(NSTableColumn *)tableColumn
          }
          NSTreeNode *newNode = [[[self.document createNewTreeNodeWithContent:parsedContents] childNodes] lastObject];
          [self.document insertNode:newNode toParentNode:node atIndex:childIndex];
+         [self.outlineView reloadItem:node reloadChildren:YES];
+         [self.outlineView expandItem:node];
+
          result = YES;
          
     }];
