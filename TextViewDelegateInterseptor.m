@@ -67,8 +67,4 @@
     return [super methodSignatureForSelector: aSelector];
 }
 
-//- (void)currentEditor {
-//    NSLog(@"wtf!");
-//}
-
 @end
