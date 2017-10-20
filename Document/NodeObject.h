@@ -37,11 +37,8 @@
 
 - (id)initWithKey:(id)theKey value:(id)theValue;
 - (id)initWithValue:(id)theValue;
-- (BOOL)typeIsCollection;
 
 @property (copy, nonatomic) NSString *key;
-@property NodeObjectType type;
 @property (strong, nonatomic) id value;
-@property (weak, nonatomic) NSUndoManager *undoManager;
 
 @end

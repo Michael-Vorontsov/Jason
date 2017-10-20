@@ -33,6 +33,7 @@
 #import "NodeObject.h"
 #import "OrderedDictionary.h"
 #import "SearchController.h"
+#import "AutocompletionPool.h"
 
 @interface Document ()
 - (void)readChildrenOf:(NSTreeNode *)parentNode;
@@ -70,7 +71,6 @@
 
 - (void)setContents:(id)contents {
 	NodeObject *data = [[NodeObject alloc] initWithValue:contents];
-    data.undoManager = self.undoManager;
 	rootNode = [[NSTreeNode alloc] initWithRepresentedObject:data];
 	[self readChildrenOf:rootNode];
 }
@@ -78,7 +78,7 @@
 - (NSTreeNode *)createNewTreeNodeWithKey:(NSString *)key content:(id)contents {
     key = (nil != key) ? key : @"<null>";
     NodeObject *data = [[NodeObject alloc] initWithKey: key value: contents];
-    data.undoManager = self.undoManager;
+    [[AutocompletionPool sharedInstance] addString: key];
     NSTreeNode *node = [[NSTreeNode alloc] initWithRepresentedObject:data];
     [self readChildrenOf: node];
     return node;
@@ -125,7 +125,6 @@
 		for (id childContents in parentArray) {
 			// Add a node for the child...
 			NodeObject *childObject = [[NodeObject alloc] initWithValue:childContents];
-            childObject.undoManager = self.undoManager;
 			NSTreeNode *childNode = [[NSTreeNode alloc] initWithRepresentedObject:childObject];
 			[children addObject:childNode];
 			
@@ -138,11 +137,9 @@
 	}
 	else if ([parentObject isKindOfClass:[MutableOrderedDictionary class]]) {
 		MutableOrderedDictionary *parentDict = parentObject;
-//        for (NSString *key in [[parentDict allKeys] sortedArrayUsingSelector:@selector(localizedCaseInsensitiveCompare:)]) {
         for (NSString *key in [parentDict allKeys]) {
 			// Add a node for the child...
 			NodeObject *childObject = [[NodeObject alloc] initWithKey:key value:[parentDict objectForKey:key]];
-            childObject.undoManager = self.undoManager;
 
 			NSTreeNode *childNode = [[NSTreeNode alloc] initWithRepresentedObject:childObject];
 			[children addObject:childNode];
@@ -175,7 +172,7 @@
 - (void)writeChildrenOf:(NSTreeNode *)parentNode toObject:(id)object {
 	NodeObject *parentObject = [parentNode representedObject];
 	
-    switch (parentObject.type) {
+    switch ([self typeForNode: parentNode]) {
         case kNodeObjectTypeArray: {
             parentObject.value = [NSMutableArray new];
             NSMutableArray *array = object;
@@ -233,11 +230,31 @@
 
 - (void)setKey:(NSString *)newKey forNode:(NSTreeNode *)node {
     NodeObject *content = node.representedObject;
+    NSString *oldKey = content.key;
+    if (newKey == oldKey || [newKey isEqualToString: oldKey]) {
+        return;
+    }
+
+    [AutocompletionPool.sharedInstance removeString:oldKey];
+    [AutocompletionPool.sharedInstance addString:newKey];
+    
+    [self.undoManager registerUndoWithTarget:self handler:^(id  _Nonnull target) {
+        [target setKey:oldKey forNode:node];
+    }];
+
     content.key = newKey;
 }
 
 - (void)setValue:(id<NodeContentProtocol>)newValue forNode:(NSTreeNode *)node {
     NodeObject *content = node.representedObject;
+    id oldValue = content.value;
+    if (oldValue == newValue) {
+        return;
+    }
+    [self.undoManager registerUndoWithTarget:self handler:^(id  _Nonnull target) {
+        [target setValue:oldValue forNode:node];
+    }];
+
     content.value = newValue;
 }
 
@@ -247,13 +264,79 @@
 }
 
 - (void)setType:(NodeObjectType)newType forNode:(NSTreeNode*)node {
-    NodeObject *content = node.representedObject;
-    content.type = newType;
+        NodeObject *content = node.representedObject;
+        id oldValue = content.value;
+    
+        id newValue = nil;
+        
+        // Possible conversions:
+        //
+        // String -> Number, Boolean
+        // Boolean -> String, Number (boolean must be tested before number)
+        // Number -> String, Boolean
+        
+        // From string to...
+        if ([oldValue isKindOfClass:[NSString class]]) {
+            NSString *stringValue = (NSString *)oldValue;
+            
+            if (newType == kNodeObjectTypeNumber) { // from string to number
+                newValue = [[NSDecimalNumber alloc] initWithString:stringValue];
+                if ([newValue isEqual:[NSDecimalNumber notANumber]]) newValue = nil;
+            }
+            else if (newType == kNodeObjectTypeBool) { // from string to boolean
+                newValue = [NSNumber numberWithBool:[stringValue boolValue]];
+            }
+        }
+        // From boolean to...
+        else if ([[oldValue className] containsString: @"Boolean"]) {
+            BOOL boolValue = [(NSNumber *)oldValue boolValue];
+            
+            if (newType == kNodeObjectTypeString) { // from boolean to string
+                newValue = [NSString stringWithString:boolValue ?
+                            NSLocalizedString(@"true", @"") :
+                            NSLocalizedString(@"false", @"")];
+            }
+            else if (newType == kNodeObjectTypeNumber) { // from boolean to number
+                newValue = [NSNumber numberWithInt:boolValue ? 1 : 0];
+            }
+        }
+        // From number to...
+        else if ([oldValue isKindOfClass: [NSNumber class]]) {
+            NSDecimalNumber *numberValue = (NSDecimalNumber *)oldValue;
+            
+            if (newType == kNodeObjectTypeString) { // from number to string
+                newValue = [NSString stringWithFormat:@"%@", numberValue];
+            }
+            else if (newType == kNodeObjectTypeBool) { // from number to boolean
+                newValue = [NSNumber numberWithBool:[numberValue boolValue]];
+            }
+        }
+        
+        // If no conversion could be applied, instantiate a default value
+        // that's not based on the old value
+        if (!newValue) {
+            switch (newType) {
+                case kNodeObjectTypeDictionary: newValue = [MutableOrderedDictionary new]; break;
+                case kNodeObjectTypeArray: newValue = [NSMutableArray new]; break;
+                case kNodeObjectTypeString: newValue = @""; break;
+                case kNodeObjectTypeNumber: newValue = [NSDecimalNumber numberWithInt:0]; break;
+                case kNodeObjectTypeBool: newValue = (id)kCFBooleanFalse; break;
+                default: newValue = [NSNull null]; break;
+            }
+        }
+        
+    [self setValue:newValue forNode:node];
 }
 
 - (NodeObjectType)typeForNode:(NSTreeNode*)node {
-    NodeObject *content = node.representedObject;
-    return content.type;
+    id value = [self valueForNode: node];
+    if ([value isKindOfClass:[NSDictionary class]]) return kNodeObjectTypeDictionary;
+    else if ([value isKindOfClass:[NSArray class]]) return kNodeObjectTypeArray;
+    else if ([value isKindOfClass:[NSString class]]) return kNodeObjectTypeString;
+    else if ([[value className] containsString:@"Boolean"]) return kNodeObjectTypeBool;
+    else if ([value isKindOfClass:[NSNumber class]]) return kNodeObjectTypeNumber;
+    
+    return kNodeObjectTypeNull;
 }
 
 - (void)deleteNode:(NSTreeNode *)currentNode fromParent:(NSTreeNode *)parentNode {

@@ -28,8 +28,6 @@
  */
 
 #import "NodeObject.h"
-#import "AutocompletionPool.h"
-#import "OrderedDictionary.h"
 
 @implementation NodeObject
 
@@ -40,128 +38,13 @@
 	self = [super init];
 	if (self) {
 		key = theKey;
-        [AutocompletionPool.sharedInstance addString:theKey];
 		value = theValue;
 	}
-
 	return self;
 }
 
 - (id)initWithValue:(id)theValue {
 	return [self initWithKey:nil value:theValue];
-}
-
-- (NodeObjectType)type {
-	if ([value isKindOfClass:[NSDictionary class]]) return kNodeObjectTypeDictionary;
-	else if ([value isKindOfClass:[NSArray class]]) return kNodeObjectTypeArray;
-	else if ([value isKindOfClass:[NSString class]]) return kNodeObjectTypeString;
-	else if ([[value className] containsString:@"Boolean"]) return kNodeObjectTypeBool;
-	else if ([value isKindOfClass:[NSNumber class]]) return kNodeObjectTypeNumber;
-
-	return kNodeObjectTypeNull;
-}
-
-- (void)setType:(NodeObjectType)newType {
-    NodeObjectType oldType = self.type;
-    id oldValue = self.value;
-    [self.undoManager registerUndoWithTarget:self handler:^(id  _Nonnull target) {
-        [target setType:oldType];
-        [target setValue:oldValue];
-    }];
-    
-	id newValue = nil;
-	
-	// Possible conversions:
-	//
-	// String -> Number, Boolean
-	// Boolean -> String, Number (boolean must be tested before number)
-	// Number -> String, Boolean
-	
-	// From string to...
-	if ([value isKindOfClass:[NSString class]]) {
-		NSString *stringValue = (NSString *)value;
-		
-		if (newType == kNodeObjectTypeNumber) { // from string to number
-			newValue = [[NSDecimalNumber alloc] initWithString:stringValue];
-			if ([newValue isEqual:[NSDecimalNumber notANumber]]) newValue = nil;
-		}
-		else if (newType == kNodeObjectTypeBool) { // from string to boolean
-			newValue = [NSNumber numberWithBool:[stringValue boolValue]];
-		}
-	}
-	// From boolean to...
-	else if ([[value className] containsString:@"Boolean"]) {
-		BOOL boolValue = [(NSNumber *)value boolValue];
-		
-		if (newType == kNodeObjectTypeString) { // from boolean to string
-			newValue = [NSString stringWithString:boolValue ?
-						NSLocalizedString(@"true", @"") :
-						NSLocalizedString(@"false", @"")];
-		}
-		else if (newType == kNodeObjectTypeNumber) { // from boolean to number
-			newValue = [NSNumber numberWithInt:boolValue ? 1 : 0];
-		}
-	}
-	// From number to...
-	else if ([value isKindOfClass:[NSNumber class]]) {
-		NSDecimalNumber *numberValue = (NSDecimalNumber *)value;
-		
-		if (newType == kNodeObjectTypeString) { // from number to string
-			newValue = [NSString stringWithFormat:@"%@", numberValue];
-		}
-		else if (newType == kNodeObjectTypeBool) { // from number to boolean
-			newValue = [NSNumber numberWithBool:[numberValue boolValue]];
-		}
-	}
-	
-	// If no conversion could be applied, instantiate a default value
-	// that's not based on the old value
-	if (! newValue) {
-		switch (newType) {
-			case kNodeObjectTypeDictionary: newValue = [MutableOrderedDictionary new]; break;
-			case kNodeObjectTypeArray: newValue = [NSMutableArray new]; break;
-			case kNodeObjectTypeString: newValue = @""; break;
-			case kNodeObjectTypeNumber: newValue = [NSDecimalNumber numberWithInt:0]; break;
-			case kNodeObjectTypeBool: newValue = (id)kCFBooleanFalse; break;
-			default: newValue = [NSNull null]; break;
-		}
-	}
-
-	self.value = newValue;
-}
-
-- (void)setValue:(id)newValue {
-    if (value == newValue) {
-        return;
-    }
-    id oldType = self.value;
-    [self.undoManager registerUndoWithTarget:self handler:^(id  _Nonnull target) {
-        [target setValue:oldType];
-    }];
-
-    value = newValue;
-}
-
-- (void)setKey:(NSString *)newKey {
-    if ([newKey isEqualToString: key]) {
-        return;
-    }
-    NSString *oldKey = self.key;
-    
-    if (nil != oldKey) {
-        [AutocompletionPool.sharedInstance removeString:oldKey];
-        [AutocompletionPool.sharedInstance addString:newKey];
-
-        [self.undoManager registerUndoWithTarget:self handler:^(id  _Nonnull target) {
-            [target setKey:oldKey];
-        }];
-    }
-
-    key = newKey;
-}
-
-- (BOOL)typeIsCollection {
-	return [value isKindOfClass:[NSDictionary class]] || [value isKindOfClass:[NSArray class]];
 }
 
 @end
