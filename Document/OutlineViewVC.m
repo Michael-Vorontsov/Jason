@@ -108,7 +108,6 @@ static NSNumberFormatter *numberFormatter = nil;
     [disabledValueCell setEditable:NO];
     
     [outlineView sizeLastColumnToFit];
-    Document *doc = [self representedObject];
 
     NSNotificationCenter * _Nonnull notificationCenter = [NSNotificationCenter defaultCenter];
     
