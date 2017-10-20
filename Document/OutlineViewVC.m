@@ -425,53 +425,6 @@ objectValueForTableColumn:(NSTableColumn *)tableColumn
 
 #pragma mark -
 
-- (void)deleteNode:(NSTreeNode*)currentNode fromParent:(NSTreeNode*)parentNode {
-    Document *doc = [self representedObject];
-    
-    if (! parentNode) { // removing the root object
-        [doc resetContents];
-        [outlineView reloadData];
-        [doc updateChangeCount:NSChangeDone];
-    }
-    else {
-        NSIndexPath *path = [currentNode indexPath];
-        NSUInteger position = [path indexAtPosition:[path length] - 1];
-        NSTreeNode *nodeToRemove = [[parentNode childNodes] objectAtIndex:position];
-        
-        [doc.undoManager registerUndoWithTarget:self handler:^(id  _Nonnull target) {
-            [target insertNode:nodeToRemove toParentNode:parentNode atIndex:position];
-            
-            NSUInteger rowToSelect = [outlineView rowForItem:nodeToRemove];
-            [outlineView selectRowIndexes:[NSIndexSet indexSetWithIndex:rowToSelect] byExtendingSelection:NO];
-            
-        }];
-        
-        
-        [[parentNode mutableChildNodes] removeObjectAtIndex:position];
-        [outlineView reloadItem:parentNode reloadChildren:YES];
-        [doc updateChangeCount:NSChangeDone];
-    }
-    
-}
-
-- (void)insertNode:(NSTreeNode *)newNode toParentNode:(NSTreeNode *)parentNode atIndex:(NSUInteger)row {
-    Document *doc = [self representedObject];
-    
-    [doc.undoManager registerUndoWithTarget:self handler:^(id  _Nonnull target) {
-        [target deleteNode:newNode fromParent:parentNode];
-    }];
-    
-    
-    if (row < parentNode.childNodes.count) {
-        [[parentNode mutableChildNodes] insertObject:newNode atIndex:row];
-    } else {
-        [[parentNode mutableChildNodes] addObject:newNode];
-    }
-    [outlineView reloadItem:parentNode reloadChildren:YES];
-    [outlineView expandItem:parentNode];
-    
-}
-
 
 #pragma mark -
 #pragma mark IB Actions
@@ -513,7 +466,9 @@ objectValueForTableColumn:(NSTableColumn *)tableColumn
 	}
     id newContent = @"";
     NSTreeNode *newNode = [self.document createNewTreeNodeWithKey: newKey content: newContent];
-    [self insertNode:newNode toParentNode:parentNode atIndex:NSIntegerMax];
+    [self.document insertNode:newNode toParentNode:parentNode atIndex:NSIntegerMax];
+    [self.outlineView reloadItem:parentNode reloadChildren: YES];
+    [self.outlineView expandItem:parentNode];
     
     NSUInteger rowToSelect = [outlineView rowForItem:newNode];
     [outlineView selectRowIndexes:[NSIndexSet indexSetWithIndex:rowToSelect] byExtendingSelection:NO];
@@ -534,7 +489,8 @@ objectValueForTableColumn:(NSTableColumn *)tableColumn
 	{
         NSTreeNode *currentNode = [outlineView itemAtRow:currentIndex];
         NSTreeNode *parentNode = [currentNode parentNode];
-        [self deleteNode:currentNode fromParent:parentNode];
+        [self.document deleteNode:currentNode fromParent:parentNode];
+        [self.outlineView reloadItem:parentNode reloadChildren: YES];
 	}
 	if ([selectedIndexSet count] == 1) {
 		[outlineView selectRowIndexes:[NSIndexSet indexSetWithIndex:[selectedIndexSet firstIndex]]
@@ -584,7 +540,7 @@ objectValueForTableColumn:(NSTableColumn *)tableColumn
                 [self.dragItems
                  enumerateObjectsWithOptions:NSEnumerationReverse
                  usingBlock:^(NSTreeNode *node, NSUInteger index, BOOL *stop) {
-                     [self deleteNode:node fromParent:node.parentNode];
+                     [self.document deleteNode:node fromParent:node.parentNode];
                  }];
                 break;
             }
@@ -643,7 +599,7 @@ objectValueForTableColumn:(NSTableColumn *)tableColumn
              return;
          }
          NSTreeNode *newNode = [[[self.document createNewTreeNodeWithContent:parsedContents] childNodes] lastObject];
-         [self insertNode:newNode toParentNode:node atIndex:childIndex];
+         [self.document insertNode:newNode toParentNode:node atIndex:childIndex];
          result = YES;
          
     }];
@@ -855,10 +811,10 @@ objectValueForTableColumn:(NSTableColumn *)tableColumn
         NSUInteger index = [[parrentNode childNodes] indexOfObject:currentNode] + 1;
         NSTreeNode *newNode = [self.document createNewTreeNodeWithContent:parsedContents];
         if (1 == newNode.childNodes.count) {
-            [self insertNode:newNode.childNodes.lastObject toParentNode:parrentNode atIndex:index];
+            [self.document insertNode:newNode.childNodes.lastObject toParentNode:parrentNode atIndex:index];
         }
         else {
-            [self insertNode:newNode toParentNode:parrentNode atIndex:index];
+            [self.document insertNode:newNode toParentNode:parrentNode atIndex:index];
         }
     }
 }

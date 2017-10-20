@@ -256,6 +256,38 @@
     return content.type;
 }
 
+- (void)deleteNode:(NSTreeNode *)currentNode fromParent:(NSTreeNode *)parentNode {
+    
+    if (! parentNode) { // removing the root object
+        [self resetContents];
+    }
+    else {
+        NSIndexPath *path = [currentNode indexPath];
+        NSUInteger position = [path indexAtPosition:[path length] - 1];
+        NSTreeNode *nodeToRemove = [[parentNode childNodes] objectAtIndex:position];
+        
+        [self.undoManager registerUndoWithTarget:self handler:^(id  _Nonnull target) {
+            [target insertNode:nodeToRemove toParentNode:parentNode atIndex:position];
+        }];
+        
+        [[parentNode mutableChildNodes] removeObjectAtIndex:position];
+    }
+}
+
+- (void)insertNode:(NSTreeNode *)newNode toParentNode:(NSTreeNode *)parentNode atIndex:(NSUInteger)row {
+    
+    [self.undoManager registerUndoWithTarget:self handler:^(id  _Nonnull target) {
+        [target deleteNode:newNode fromParent:parentNode];
+    }];
+    
+    if (row < parentNode.childNodes.count) {
+        [[parentNode mutableChildNodes] insertObject:newNode atIndex:row];
+    } else {
+        [[parentNode mutableChildNodes] addObject:newNode];
+    }
+}
+
+
 #pragma mark -
 #pragma mark Read and write
 

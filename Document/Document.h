@@ -46,6 +46,9 @@ typedef NodeObjectType NodeContentType;
 - (void)setType:(NodeContentType)newType forNode:(NSTreeNode*)node;
 - (NodeContentType)typeForNode:(NSTreeNode*)node;
 
+- (void)insertNode:(NSTreeNode *)newNode toParentNode:(NSTreeNode *)parentNode atIndex:(NSUInteger)row;
+- (void)deleteNode:(NSTreeNode *)currentNode fromParent:(NSTreeNode *)parentNode;
+
 - (NSString *)stringRepresentationForNode:(NSTreeNode *)node;
 
 @end
