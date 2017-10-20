@@ -109,7 +109,6 @@ static NSNumberFormatter *numberFormatter = nil;
     
     [outlineView sizeLastColumnToFit];
     Document *doc = [self representedObject];
-    NSLog(@"%i", [doc hasUndoManager]);
 
     NSNotificationCenter * _Nonnull notificationCenter = [NSNotificationCenter defaultCenter];
     
@@ -554,7 +553,8 @@ objectValueForTableColumn:(NSTableColumn *)tableColumn
 }
 
 - (NSDragOperation)outlineView:(NSOutlineView *)ov validateDrop:(id <NSDraggingInfo>)info proposedItem:(id)item proposedChildIndex:(NSInteger)childIndex {
-    return NSDragOperationMove;
+    NSDragOperation moveOrCopy = (info.draggingSourceOperationMask == NSDragOperationCopy ? NSDragOperationCopy : NSDragOperationMove);
+    return moveOrCopy;
 }
 
 - (BOOL)outlineView:(NSOutlineView *)ov acceptDrop:(id <NSDraggingInfo>)info item:(id)item childIndex:(NSInteger)childIndex {
