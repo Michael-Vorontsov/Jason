@@ -30,7 +30,6 @@
 #import "OutlineViewVC.h"
 #import "OutlineView.h"
 #import "OutlineViewDelegate.h"
-//#import "NodeObject.h"
 #import "Document.h"
 #import "SBJsonParser.h"
 #import "SBJsonWriter.h"
@@ -38,14 +37,12 @@
 #import "TextViewDelegateInterseptor.h"
 #import "SearchController.h"
 
-
 @interface OutlineViewVC ()
 - (void)refreshView;
 - (void)changeTypeTo:(NSUInteger)newType forIndexSet:(NSIndexSet *)indexSet;
 
 @property (nonatomic, strong) NSMutableSet *subscriptions;
 @property (nonatomic, strong) NSArray *dragItems;
-//@property (nonatomic, weak) id<NSTextViewDelegate> textEditorDelegate;
 @property (nonatomic, strong) TextViewDelegateInterseptor *textEditorDelegateInterseptor;
 
 @property (nonatomic, strong) NSOrderedSet *searchResults;
@@ -53,7 +50,6 @@
 @property (nonatomic, readonly) Document *document;
 
 @end
-
 
 @implementation OutlineViewVC
 
@@ -97,7 +93,6 @@ static NSNumberFormatter *numberFormatter = nil;
     disabledKeyCell = [[keyColumn dataCell] copy];
     [disabledKeyCell setEnabled:NO];
     [disabledKeyCell setEditable:NO];
-    //[(NSTextFieldCell *)disabledKeyCell setTextColor:[NSColor darkGrayColor]];
     
     disabledTypeCell = [[typeColumn dataCell] copy];
     [disabledTypeCell setEnabled:NO];
@@ -156,7 +151,7 @@ static NSNumberFormatter *numberFormatter = nil;
 //    NodeObject *currentObject = [currentNode representedObject];
 
 	NSCell *cell = nil;
-	
+    
 	// Boolean values use a checkbox cell
     if (tableColumn == valueColumn && [self.document typeForNode: currentNode] == kNodeObjectTypeBool) {
 		cell = buttonCell;
@@ -201,7 +196,6 @@ static NSNumberFormatter *numberFormatter = nil;
 	
 	if (tableColumn == keyColumn) {
 		NSTreeNode *parentNode = [currentNode parentNode];
-//        NodeObject *parentObject = [parentNode representedObject];
         shouldEdit = (! editValueColumnOnly) && [self.document typeForNode:parentNode] == kNodeObjectTypeDictionary;
 	}
 	else if (tableColumn == typeColumn) {
@@ -420,9 +414,6 @@ objectValueForTableColumn:(NSTableColumn *)tableColumn
 	
 	if (changed) [doc updateChangeCount:NSChangeDone];	
 }
-
-#pragma mark -
-
 
 #pragma mark -
 #pragma mark IB Actions
@@ -866,8 +857,6 @@ objectValueForTableColumn:(NSTableColumn *)tableColumn
     NSInteger selectedIndex = [self selectItem: searchResult];
     return selectedIndex >= 0;
 }
-
-
 
 #pragma mark -
 #pragma mark - TextViewDelegate
