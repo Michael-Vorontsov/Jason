@@ -30,7 +30,7 @@
 #import "OutlineViewVC.h"
 #import "OutlineView.h"
 #import "OutlineViewDelegate.h"
-#import "NodeObject.h"
+//#import "NodeObject.h"
 #import "Document.h"
 #import "SBJsonParser.h"
 #import "SBJsonWriter.h"
@@ -50,6 +50,7 @@
 
 @property (nonatomic, strong) NSOrderedSet *searchResults;
 @property (nonatomic, readwrite) NSInteger selectedSearchIndex;
+@property (nonatomic, readonly) Document *document;
 
 @end
 
@@ -75,6 +76,10 @@ static NSNumberFormatter *numberFormatter = nil;
 
 - (void)dealloc {
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
+}
+
+- (Document *)document {
+    return self.representedObject;
 }
 
 - (void)viewDidLoad {
@@ -150,16 +155,16 @@ static NSNumberFormatter *numberFormatter = nil;
 
 - (NSCell *)outlineView:(NSOutlineView *)theOutlineView dataCellForTableColumn:(NSTableColumn *)tableColumn item:(id)item {
 	NSTreeNode *currentNode = item;
-	NodeObject *currentObject = [currentNode representedObject];
+//    NodeObject *currentObject = [currentNode representedObject];
 
 	NSCell *cell = nil;
 	
 	// Boolean values use a checkbox cell
-	if (tableColumn == valueColumn && currentObject && currentObject.type == kNodeObjectTypeBool) {
+    if (tableColumn == valueColumn && [self.document typeForNode: currentNode] == kNodeObjectTypeBool) {
 		cell = buttonCell;
 	}
 	// Number values need a number formatter
-	else if (tableColumn == valueColumn && currentObject && currentObject.type == kNodeObjectTypeNumber) {
+	else if (tableColumn == valueColumn && [self.document typeForNode: currentNode] == kNodeObjectTypeNumber) {
 		cell = numberCell;
 	}	
 	// Default cell
@@ -184,9 +189,8 @@ static NSNumberFormatter *numberFormatter = nil;
     }
     NSUInteger index = self.outlineView.selectedRow;
     NSTreeNode *selectedNode = [self.outlineView itemAtRow:index];
-    NodeObject *nodeObject = selectedNode.representedObject;
-    if (nodeObject.type == kNodeObjectTypeString) {
-        NSString *value = nodeObject.value;
+    if ([self.document typeForNode:selectedNode] == kNodeObjectTypeString) {
+        NSString *value = [self.document valueForNode: selectedNode];
         if (value.length > 3) {
             [[NSApplication sharedApplication] sendAction:NSSelectorFromString(@"searchFor:") to:nil from: value];
         }
@@ -199,14 +203,14 @@ static NSNumberFormatter *numberFormatter = nil;
 	
 	if (tableColumn == keyColumn) {
 		NSTreeNode *parentNode = [currentNode parentNode];
-		NodeObject *parentObject = [parentNode representedObject];
-		shouldEdit = (! editValueColumnOnly) && parentObject.type == kNodeObjectTypeDictionary;
+//        NodeObject *parentObject = [parentNode representedObject];
+        shouldEdit = (! editValueColumnOnly) && [self.document typeForNode:parentNode] == kNodeObjectTypeDictionary;
 	}
 	else if (tableColumn == typeColumn) {
 		shouldEdit = ! editValueColumnOnly;	
 	}
 	else if (tableColumn == valueColumn) {
-		NodeObjectType type = [(NodeObject *)[currentNode representedObject] type];
+        NodeObjectType type = [self.document typeForNode: currentNode];
 		shouldEdit = (type == kNodeObjectTypeString ||
 					  type == kNodeObjectTypeNumber ||
 					  type == kNodeObjectTypeBool);
@@ -253,8 +257,6 @@ objectValueForTableColumn:(NSTableColumn *)tableColumn
 {
 	NSTreeNode *node = item;
     NSTreeNode *parentNode = [node parentNode];
-	NodeObject *object = [node representedObject];
-    NodeObject *parentObject = [parentNode representedObject];
 
 	/***** Key column *****/
 	if (tableColumn == keyColumn) {
@@ -262,7 +264,8 @@ objectValueForTableColumn:(NSTableColumn *)tableColumn
 		if (nil == parentNode) return NSLocalizedString(@"Root", @"");
 		
 		// If it belongs to a dictionary, return its key
-		if (parentObject.type == kNodeObjectTypeDictionary && nil != object.key) return object.key;
+        NSString *key = [self.document keyForNode: node];
+		if ([self.document typeForNode: parentNode] == kNodeObjectTypeDictionary && nil != key) return key;
 		
 		// If it doesn't belong to a dictionary then it belongs to an array. Return its position within the array
 		NSIndexPath *indexPath = [node indexPath];
@@ -273,69 +276,102 @@ objectValueForTableColumn:(NSTableColumn *)tableColumn
 	else if (tableColumn == typeColumn) {
 		// Because of the separator between dictionary/array and scalar values,
 		// we need to change the type sent to the table view
-		NSUInteger type = object.type;
-		if (type > 1) type++;
-		return [NSNumber numberWithLong:type];
+        return [NSNumber numberWithLong: [self menuIndexForType:[self.document typeForNode: node]]];
 	}
 	/***** Value column *****/
 	else if (tableColumn == valueColumn) {
 		// Collections show the number of items
-		if ([object typeIsCollection]) {
+		if ([self.document typeForNode: node] & kNodeObjectTypeCollection) {
 			NSUInteger count = [[node childNodes] count];
 			if (count == 1) return [NSString stringWithString:NSLocalizedString(@"(1 item)", @"")];
 			return [NSString stringWithFormat:NSLocalizedString(@"(%d items)", @""), count];
 		}
 		// Null shows, erm, null
-		else if (object.type == kNodeObjectTypeNull) return NSLocalizedString(@"(null)", @"");
+		else if ([self.document typeForNode: node] == kNodeObjectTypeNull) return NSLocalizedString(@"(null)", @"");
 		// Otherwise show the item itself
-		else return object.value;	
+        else return [self.document valueForNode: node];
 	}
 	
 	return @"";
 }
 
 - (void)changeTypeTo:(NSUInteger)newType {
-	NSIndexSet *selectedIndexSet = [outlineView selectedRowIndexes];
+    NSIndexSet *selectedIndexSet = [outlineView selectedRowIndexes];
     [self changeTypeTo:newType forIndexSet: selectedIndexSet];
 }
 
 - (void)changeTypeTo:(NSUInteger)newType forIndexSet:(NSIndexSet *)indexSet {
     
-    Document *doc = [self representedObject];
-
     for (NSUInteger currentIndex = [indexSet firstIndex];
          currentIndex != NSNotFound;
          currentIndex = [indexSet indexGreaterThanIndex:currentIndex]) {
         NSTreeNode *currentNode = [outlineView itemAtRow:currentIndex];
         NSTreeNode *parentNode = [outlineView parentForItem:currentNode];
-        NodeObject *currentObject = [currentNode representedObject];
+        //        NodeObject *currentObject = [currentNode representedObject];
         
-        if (kNodeObjectTypeDictionary == currentObject.type && kNodeObjectTypeArray == newType) {
+        if (kNodeObjectTypeDictionary == [self.document typeForNode: currentNode] && kNodeObjectTypeArray == newType) {
             NSInteger index = 0;
             for (NSTreeNode *each in currentNode.childNodes) {
-                NodeObject *subNode = each.representedObject;
-                subNode.key = [NSString stringWithFormat:NSLocalizedString(@"Item %u", @""), index];
+                [self.document setKey:[NSString stringWithFormat:NSLocalizedString(@"Item %u", @""), index] forNode:each];
                 index++;
             }
         }
         
-        currentObject.type = (NodeObjectType)newType;
+        [self.document setType:newType forNode:currentNode];
         
         if (parentNode == nil) { // replacing the root object
-            doc.contents = currentObject.value;
+            self.document.contents = [self.document valueForNode: currentNode];
             [outlineView reloadData];
         }
         else {
             [outlineView reloadItem:currentNode];
         }
         
-        
-        
-        [doc updateChangeCount:NSChangeDone];
+        [self.document updateChangeCount:NSChangeDone];
     }
-
+    
 }
 
+
+#pragma mark -PopUp Menu  items to Type convertor helper
+- (NSInteger)menuIndexForType:(NodeContentType)type {
+    switch (type) {
+        case kNodeObjectTypeDictionary:
+            return 0;
+        case kNodeObjectTypeArray:
+            return 1;
+        case kNodeObjectTypeString:
+            return 3;
+        case kNodeObjectTypeNumber:
+            return 4;
+        case kNodeObjectTypeBool:
+            return 5;
+        case kNodeObjectTypeNull:
+            return 6;
+        case kNodeObjectTypeCollection:
+        case kNodeObjectTypeLeaf:
+            return -1;
+    }
+}
+
+- (NodeContentType)typeForMenuIndex:(NSInteger)index {
+    switch (index) {
+        case 0:
+            return kNodeObjectTypeDictionary;
+        case 1:
+            return kNodeObjectTypeArray;
+        case 3:
+            return kNodeObjectTypeString;
+        case 4:
+            return kNodeObjectTypeNumber;
+        case 5:
+            return kNodeObjectTypeBool;
+        case 6:
+            return kNodeObjectTypeNull;
+        default:
+            return 0;
+    }
+}
 
 - (void)outlineView:(NSOutlineView *)theOutlineView
 	 setObjectValue:(id)newValue
@@ -349,16 +385,14 @@ objectValueForTableColumn:(NSTableColumn *)tableColumn
 	if (tableColumn == keyColumn) {
 		NSTreeNode *currentNode = item;
 		NSTreeNode *parentNode = [outlineView parentForItem:currentNode];
-		NodeObject *currentObject = [currentNode representedObject];
-		NodeObject *parentObject = [parentNode representedObject];
-		
-		// Only dictionary items can have their key changed
-		if (parentObject.type == kNodeObjectTypeDictionary) {
+
+        // Only dictionary items can have their key changed
+		if ([self.document typeForNode: parentNode] == kNodeObjectTypeDictionary) {
 			NSMutableArray *children = [parentNode mutableChildNodes];
 			
 			// We only allow replacing an existing key with a non-existing one
-			if (! [children containsObject:newValue]) {
-				currentObject.key = newValue;
+			if (![children containsObject:newValue]) {
+                [self.document setKey: newValue forNode: currentNode];
 				[outlineView reloadItem:currentNode];
 				changed = YES;
 			}
@@ -368,20 +402,19 @@ objectValueForTableColumn:(NSTableColumn *)tableColumn
 	else if (tableColumn == typeColumn) {
 		// Because of the separator between dictionary/array and scalar values,
 		// we need to change the type sent by the table view
-		NSUInteger newType = [newValue intValue];
-		if (newType > 1) newType--;
-		[self changeTypeTo:newType];
+		[self changeTypeTo: [self typeForMenuIndex: [newValue integerValue]]];
 		changed = YES;
 	}
 	/***** Value column *****/
 	else if (tableColumn == valueColumn) {
 		NSTreeNode *currentNode = item;
-		NSTreeNode *parentNode = [outlineView parentForItem:currentNode];
+        NSTreeNode *parentNode = [currentNode parentNode];
 		
-		if (! parentNode) doc.contents = newValue;
+        if (nil == parentNode){
+            doc.contents = newValue;
+        }
 		else {
-			NodeObject *currentObject = [currentNode representedObject];
-			currentObject.value = newValue;
+            [self.document setValue: newValue forNode: currentNode];
 			[outlineView reloadItem:currentNode];
 		}
 		changed = YES;
@@ -444,59 +477,51 @@ objectValueForTableColumn:(NSTableColumn *)tableColumn
 #pragma mark IB Actions
 
 - (IBAction)addRow:(id)sender {
-    Document *doc = [self representedObject];
-
 	// Search for a collection (array, dictionary) starting from the currently
 	// selected item, up the hierarchy
 	NSInteger row = [outlineView selectedRow];
     if (row < 0 || row > outlineView.numberOfRows) {
         row = 0;
     }
+    NSAssert(row >= 0, @"addRow: row < 0");
+
 	NSTreeNode *parentNode = [outlineView itemAtRow:row];
-	
-	while (parentNode && ! [(NodeObject *)[parentNode representedObject] typeIsCollection]) {
+    NodeContentType parentType = [self.document typeForNode: parentNode];
+	while (nil != parentNode && !(parentType & kNodeObjectTypeCollection)) {
 		parentNode = [parentNode parentNode];
+        parentType = [self.document typeForNode:parentNode];
 	}
 	
-	NSAssert(row >= 0, @"addRow: row < 0");
-	
-	NodeObject *parentObject = [parentNode representedObject];
-	// We can only add rows to arrays/dictionaries
-	if (! [parentObject typeIsCollection]) return;
-	
-	NodeObject *newObject = [[NodeObject alloc] initWithValue:@""];
-    newObject.undoManager = doc.undoManager;
+	// Do nothing if root node not a collection
+	if (0 == (parentType & kNodeObjectTypeCollection)) return;
     
 	// Rows belonging to a dictionary need a key. Find a key that doesn't exist yet
-	if (parentObject.type == kNodeObjectTypeDictionary) {
+    NSString *newKey = nil;
+	if (parentType == kNodeObjectTypeDictionary) {
 		NSUInteger i = 0;
-		NSString *newKey;
 		BOOL foundKey;
 		do {
 			newKey = [NSString stringWithFormat:NSLocalizedString(@"New item %u", @""), i++];
 			foundKey = [[parentNode childNodes] indexOfObjectPassingTest:^(NSTreeNode *node, NSUInteger idx, BOOL *stop) {
-				NodeObject *obj = [node representedObject];
-				if ([obj.key isEqualToString:newKey]) {
+				if ([[self.document keyForNode: node] isEqualToString: newKey]) {
 					*stop = YES;
 					return YES;
 				}
 				return NO;
 			}] != NSNotFound;
 		} while (foundKey);
-		
-		newObject.key = newKey;
 	}
-	
-	NSTreeNode *newNode = [[NSTreeNode alloc] initWithRepresentedObject:newObject];
+    id newContent = @"";
+    NSTreeNode *newNode = [self.document createNewTreeNodeWithKey: newKey content: newContent];
     [self insertNode:newNode toParentNode:parentNode atIndex:NSIntegerMax];
     
     NSUInteger rowToSelect = [outlineView rowForItem:newNode];
     [outlineView selectRowIndexes:[NSIndexSet indexSetWithIndex:rowToSelect] byExtendingSelection:NO];
 
-    NSInteger columnToEdit = (parentObject.type == kNodeObjectTypeDictionary && (! editValueColumnOnly)) ? 0 : 2;
+    NSInteger columnToEdit = (parentType == kNodeObjectTypeDictionary && (!editValueColumnOnly)) ? 0 : 2;
     [outlineView editColumn:columnToEdit row:rowToSelect withEvent:nil select:YES];
 
-	[doc updateChangeCount:NSChangeDone];
+	[self.document updateChangeCount:NSChangeDone];
 }
 
 
@@ -543,9 +568,8 @@ objectValueForTableColumn:(NSTableColumn *)tableColumn
 - (void)outlineView:(NSOutlineView *)outlineView draggingSession:(NSDraggingSession *)session willBeginAtPoint:(NSPoint)screenPoint forItems:(NSArray *)draggedItems {
     NSMutableString *stringToDrag = [NSMutableString new];
     self.dragItems = draggedItems;
-    Document *doc = self.representedObject;
     for (NSTreeNode* each in draggedItems) {
-        [stringToDrag appendString: [doc stringForNode:each]];
+        [stringToDrag appendString: [self.document stringRepresentationForNode:each]];
     }
     
     [session.draggingPasteboard setString:stringToDrag forType:NSPasteboardTypeString];
@@ -577,10 +601,9 @@ objectValueForTableColumn:(NSTableColumn *)tableColumn
 }
 
 - (BOOL)outlineView:(NSOutlineView *)ov acceptDrop:(id <NSDraggingInfo>)info item:(id)item childIndex:(NSInteger)childIndex {
-    Document *doc = self.representedObject;
     NSTreeNode *node = (NSTreeNode *)item;
-    NodeObject *itemObject = [node representedObject];
-    switch (itemObject.type) {
+//    NodeObject *itemObject = [node representedObject];
+    switch ([self.document typeForNode: node]) {
             
         case kNodeObjectTypeDictionary:
             break;
@@ -595,8 +618,9 @@ objectValueForTableColumn:(NSTableColumn *)tableColumn
             node = parentNode;
             break;
         }
+        default:
+            break;
     }
-    
     
     NSArray *classes = @[[NSPasteboardItem class]];
     
@@ -618,7 +642,7 @@ objectValueForTableColumn:(NSTableColumn *)tableColumn
          if (nil == parsedContents) {
              return;
          }
-         NSTreeNode *newNode = [[[doc createNewTreeNodeWithContent:parsedContents] childNodes] lastObject];
+         NSTreeNode *newNode = [[[self.document createNewTreeNodeWithContent:parsedContents] childNodes] lastObject];
          [self insertNode:newNode toParentNode:node atIndex:childIndex];
          result = YES;
          
@@ -630,7 +654,7 @@ objectValueForTableColumn:(NSTableColumn *)tableColumn
 
 /* In 10.7 multiple drag images are supported by using this delegate method. */
 - (id <NSPasteboardWriting>)outlineView:(NSOutlineView *)outlineView pasteboardWriterForItem:(id)item {
-    NSString *string = [self.representedObject stringForNode:(NSTreeNode *)item];
+    NSString *string = [self.representedObject stringRepresentationForNode:(NSTreeNode *)item];
     
     return string;
 }
@@ -768,7 +792,7 @@ objectValueForTableColumn:(NSTableColumn *)tableColumn
          currentIndex = [selectedIndexSet indexGreaterThanIndex:currentIndex])
     {
         NSTreeNode *currentNode = [outlineView itemAtRow:currentIndex];
-        NSString *string = [self.representedObject stringForNode:currentNode];
+        NSString *string = [self.representedObject stringRepresentationForNode:currentNode];
         if (string.length > 0) {
             [objectsToCopy addObject: string];
         }
@@ -829,8 +853,7 @@ objectValueForTableColumn:(NSTableColumn *)tableColumn
         }
         
         NSUInteger index = [[parrentNode childNodes] indexOfObject:currentNode] + 1;
-        Document *doc = self.representedObject;
-        NSTreeNode *newNode = [doc createNewTreeNodeWithContent:parsedContents];
+        NSTreeNode *newNode = [self.document createNewTreeNodeWithContent:parsedContents];
         if (1 == newNode.childNodes.count) {
             [self insertNode:newNode.childNodes.lastObject toParentNode:parrentNode atIndex:index];
         }

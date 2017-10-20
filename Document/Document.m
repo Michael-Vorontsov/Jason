@@ -38,6 +38,9 @@
 - (void)readChildrenOf:(NSTreeNode *)parentNode;
 - (void)writeChildrenOf:(NSTreeNode *)parentNode toObject:(id)object;
 @property (nonatomic, strong) NSMutableDictionary *finderIndex;
+
+- (NSOrderedSet<NSTreeNode *> *)searchForString:(NSString *)keyword options:(SearchOptions)options node:(NSTreeNode *)node;
+
 @end
 
 @implementation Document
@@ -72,16 +75,29 @@
 	[self readChildrenOf:rootNode];
 }
 
-- (NSTreeNode *)createNewTreeNodeWithContent:(id)contents {
-    NodeObject *data = [[NodeObject alloc] initWithValue:contents];
+- (NSTreeNode *)createNewTreeNodeWithKey:(NSString *)key content:(id)contents {
+    key = (nil != key) ? key : @"<null>";
+    NodeObject *data = [[NodeObject alloc] initWithKey: key value: contents];
     data.undoManager = self.undoManager;
     NSTreeNode *node = [[NSTreeNode alloc] initWithRepresentedObject:data];
     [self readChildrenOf: node];
-    if (nil == data.key) {
-        data.key = @"<null>";
-    }
     return node;
 }
+
+- (NSTreeNode *)createNewTreeNodeWithContent:(id)contents {
+    return [self createNewTreeNodeWithKey:nil content:contents];
+}
+
+- (NSTreeNode *)createNewTreeNodeWithKey:(NSString *)key {
+    return [self createNewTreeNodeWithKey:key  content:nil];
+}
+
+
+- (NSTreeNode *)createNewTreeNode {
+    return [self createNewTreeNodeWithKey:nil content:nil];
+}
+
+
 
 - (id)contents {
     return [self contentForNode:self.rootNode];
@@ -141,10 +157,10 @@
 }
 
 - (NSString *)stringRepresentation {
-    return [self stringForNode:self.rootNode];
+    return [self stringRepresentationForNode:self.rootNode];
 }
 
-- (NSString *)stringForNode:(NSTreeNode *)node {
+- (NSString *)stringRepresentationForNode:(NSTreeNode *)node {
     SBJsonWriter *parser = [SBJsonWriter new];
     parser.humanReadable = YES;
     parser.sortKeys = NO;
@@ -210,6 +226,36 @@
     return results;
 }
 
+- (NSString *)keyForNode:(NSTreeNode *)node {
+    NodeObject *content = node.representedObject;
+    return content.key;
+}
+
+- (void)setKey:(NSString *)newKey forNode:(NSTreeNode *)node {
+    NodeObject *content = node.representedObject;
+    content.key = newKey;
+}
+
+- (void)setValue:(id<NodeContentProtocol>)newValue forNode:(NSTreeNode *)node {
+    NodeObject *content = node.representedObject;
+    content.value = newValue;
+}
+
+- (id<NodeContentProtocol>)valueForNode:(NSTreeNode *)node {
+    NodeObject *content = node.representedObject;
+    return content.value;
+}
+
+- (void)setType:(NodeObjectType)newType forNode:(NSTreeNode*)node {
+    NodeObject *content = node.representedObject;
+    content.type = newType;
+}
+
+- (NodeObjectType)typeForNode:(NSTreeNode*)node {
+    NodeObject *content = node.representedObject;
+    return content.type;
+}
+
 #pragma mark -
 #pragma mark Read and write
 
@@ -242,7 +288,5 @@
 - (BOOL)canConcurrentlyReadDocumentsOfType:(NSString *)typeName {
 	return YES;
 }
-
-
 
 @end

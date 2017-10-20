@@ -61,6 +61,7 @@
 		097AE98A1F97C55200089C33 /* TextViewDelegateInterseptor.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TextViewDelegateInterseptor.m; sourceTree = "<group>"; };
 		097AE9971F98B08800089C33 /* OrderedDictionary.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OrderedDictionary.h; sourceTree = "<group>"; };
 		097AE9981F98B08800089C33 /* OrderedDictionary.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OrderedDictionary.m; sourceTree = "<group>"; };
+		097C77C81F9A8B5F002D73E2 /* NodeObjectType.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NodeObjectType.h; sourceTree = "<group>"; };
 		09B710FC1F99FCBA005D6440 /* SearchController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SearchController.h; sourceTree = "<group>"; };
 		09B710FD1F99FCBA005D6440 /* SearchController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SearchController.m; sourceTree = "<group>"; };
 		09B710FE1F99FCBA005D6440 /* SearchController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = SearchController.xib; sourceTree = "<group>"; };
@@ -202,6 +203,7 @@
 				097AE9851F97640000089C33 /* AutocompletionPool.m */,
 				097AE9891F97C55200089C33 /* TextViewDelegateInterseptor.h */,
 				097AE98A1F97C55200089C33 /* TextViewDelegateInterseptor.m */,
+				097C77C81F9A8B5F002D73E2 /* NodeObjectType.h */,
 			);
 			name = Document;
 			sourceTree = "<group>";

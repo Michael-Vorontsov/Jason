@@ -29,8 +29,28 @@
 
 #import <Cocoa/Cocoa.h>
 #import "SearchController.h"
+#import "NodeObjectType.h"
 
-@interface Document : NSDocument {
+@protocol NodeContentProtocol
+@end
+
+typedef NodeObjectType NodeContentType;
+
+@protocol NodeContentAccessProtocol
+- (void)setKey:(NSString *)newKey forNode:(NSTreeNode*)node;
+- (NSString*)keyForNode:(NSTreeNode *)node;
+
+- (void)setValue:(id)newValue forNode:(NSTreeNode*)node;
+- (id)valueForNode:(NSTreeNode*)node;
+
+- (void)setType:(NodeContentType)newType forNode:(NSTreeNode*)node;
+- (NodeContentType)typeForNode:(NSTreeNode*)node;
+
+- (NSString *)stringRepresentationForNode:(NSTreeNode *)node;
+
+@end
+
+@interface Document : NSDocument <NodeContentAccessProtocol> {
 	NSTreeNode *rootNode; // tree representation of the object returned by the JSON parser
 	
 	// We allow invalid JSON contents in the text view. If the document was opened with invalid
@@ -42,13 +62,24 @@
 @property (readonly) NSTreeNode *rootNode;
 @property (readonly) NSError *parseError;
 @property (readonly) NSString *invalidContents;
+
 @property id contents;
 
 - (NSString *)stringRepresentation;
-- (NSString *)stringForNode: (NSTreeNode *)node;
 - (void)resetContents;
-- (NSTreeNode *)createNewTreeNodeWithContent:(id)contents;
 
+- (NSTreeNode *)createNewTreeNodeWithKey:(NSString *)key content:(id)content;
+- (NSTreeNode *)createNewTreeNodeWithContent:(id)contents;
+- (NSTreeNode *)createNewTreeNodeWithKey:(NSString *)key;
+- (NSTreeNode *)createNewTreeNode;
+
+//TODO: Make it private. Expose SearchControllerDelegate instead.
 - (NSOrderedSet<NSTreeNode *> *)searchForString:(NSString *)keyword options:(SearchOptions)options node:(NSTreeNode *)node;
 
 @end
+
+
+
+//@interface Document (NodeContentAccess) <NodeContentAccessProtocol>
+//@end
+

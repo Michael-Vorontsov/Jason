@@ -28,15 +28,7 @@
  */
 
 #import <Foundation/Foundation.h>
-
-typedef enum {
-	kNodeObjectTypeDictionary = 0,
-	kNodeObjectTypeArray = 1,
-	kNodeObjectTypeString = 2,
-	kNodeObjectTypeNumber = 3,
-	kNodeObjectTypeBool = 4,
-	kNodeObjectTypeNull = 5
-} NodeObjectType;
+#import "NodeObjectType.h"
 
 @interface NodeObject : NSObject {
 	NSString *key;
