@@ -10,6 +10,8 @@
 		097AE9861F97640000089C33 /* AutocompletionPool.m in Sources */ = {isa = PBXBuildFile; fileRef = 097AE9851F97640000089C33 /* AutocompletionPool.m */; };
 		097AE98B1F97C55200089C33 /* TextViewDelegateInterseptor.m in Sources */ = {isa = PBXBuildFile; fileRef = 097AE98A1F97C55200089C33 /* TextViewDelegateInterseptor.m */; };
 		097AE9991F98B08800089C33 /* OrderedDictionary.m in Sources */ = {isa = PBXBuildFile; fileRef = 097AE9981F98B08800089C33 /* OrderedDictionary.m */; };
+		09B710FF1F99FCBA005D6440 /* SearchController.m in Sources */ = {isa = PBXBuildFile; fileRef = 09B710FD1F99FCBA005D6440 /* SearchController.m */; };
+		09B711001F99FCBA005D6440 /* SearchController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 09B710FE1F99FCBA005D6440 /* SearchController.xib */; };
 		1418D026125D61D10040CBB6 /* DocumentWC.m in Sources */ = {isa = PBXBuildFile; fileRef = 1418D025125D61D10040CBB6 /* DocumentWC.m */; };
 		1418D029125D61EB0040CBB6 /* NodeObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 1418D028125D61EB0040CBB6 /* NodeObject.m */; };
 		142FB6811272BEBE00EE4328 /* OutlineView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 142FB6801272BEBE00EE4328 /* OutlineView.xib */; };
@@ -59,6 +61,9 @@
 		097AE98A1F97C55200089C33 /* TextViewDelegateInterseptor.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TextViewDelegateInterseptor.m; sourceTree = "<group>"; };
 		097AE9971F98B08800089C33 /* OrderedDictionary.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OrderedDictionary.h; sourceTree = "<group>"; };
 		097AE9981F98B08800089C33 /* OrderedDictionary.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OrderedDictionary.m; sourceTree = "<group>"; };
+		09B710FC1F99FCBA005D6440 /* SearchController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SearchController.h; sourceTree = "<group>"; };
+		09B710FD1F99FCBA005D6440 /* SearchController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SearchController.m; sourceTree = "<group>"; };
+		09B710FE1F99FCBA005D6440 /* SearchController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = SearchController.xib; sourceTree = "<group>"; };
 		0A4183721938322900FB18D6 /* Jason.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Jason.pch; path = Support/Jason.pch; sourceTree = "<group>"; };
 		1058C7A7FEA54F5311CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
 		1418D024125D61D10040CBB6 /* DocumentWC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DocumentWC.h; path = Document/DocumentWC.h; sourceTree = "<group>"; };
@@ -127,6 +132,17 @@
 				097AE9981F98B08800089C33 /* OrderedDictionary.m */,
 			);
 			path = OrderedDictionary;
+			sourceTree = "<group>";
+		};
+		09B710FB1F99FCBA005D6440 /* Search */ = {
+			isa = PBXGroup;
+			children = (
+				09B710FC1F99FCBA005D6440 /* SearchController.h */,
+				09B710FD1F99FCBA005D6440 /* SearchController.m */,
+				09B710FE1F99FCBA005D6440 /* SearchController.xib */,
+			);
+			name = Search;
+			path = Classes/Search;
 			sourceTree = "<group>";
 		};
 		1058C7A6FEA54F5311CA2CBB /* Linked Frameworks */ = {
@@ -241,6 +257,7 @@
 		2A37F4ABFDCFA73011CA2CEA /* Classes */ = {
 			isa = PBXGroup;
 			children = (
+				09B710FB1F99FCBA005D6440 /* Search */,
 				097AE9961F98B08800089C33 /* OrderedDictionary */,
 				1433032E1265AB860086DD35 /* Preferences */,
 				14E795C1125BBA87006EC2F6 /* JSON */,
@@ -354,6 +371,7 @@
 				14E795F7125BDC98006EC2F6 /* Jason.icns in Resources */,
 				14E795FB125C151D006EC2F6 /* Licence.txt in Resources */,
 				14E79633125C1733006EC2F6 /* Jason Document.icns in Resources */,
+				09B711001F99FCBA005D6440 /* SearchController.xib in Resources */,
 				143303121265A90C0086DD35 /* Credits.html in Resources */,
 				1433033C1265AC370086DD35 /* Preferences.xib in Resources */,
 				142FB6811272BEBE00EE4328 /* OutlineView.xib in Resources */,
@@ -374,6 +392,7 @@
 				14E795C0125BBA38006EC2F6 /* OutlineView.m in Sources */,
 				14E795CD125BBA96006EC2F6 /* NSObject+SBJSON.m in Sources */,
 				14E795CE125BBA96006EC2F6 /* NSString+SBJSON.m in Sources */,
+				09B710FF1F99FCBA005D6440 /* SearchController.m in Sources */,
 				14E795CF125BBA96006EC2F6 /* SBJsonBase.m in Sources */,
 				14E795D0125BBA96006EC2F6 /* SBJsonParser.m in Sources */,
 				14E795D1125BBA96006EC2F6 /* SBJsonWriter.m in Sources */,

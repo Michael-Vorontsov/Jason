@@ -28,17 +28,20 @@
  */
 
 #import <Cocoa/Cocoa.h>
+#import "Document.h"
 
 @class OutlineViewVC;
 @class TextViewVC;
 
-@interface DocumentWC : NSWindowController {
+@interface DocumentWC : NSWindowController <SearchControllerDelegate> {
 	NSViewController *currentVC;
 	OutlineViewVC *outlineViewVC;
 	TextViewVC *textViewVC;
 	
 	BOOL parseErrorHasBeenShown;
 }
+@property (nonatomic, strong) NSTextFinder *textFinder;
+@property (nonatomic, readonly) BOOL isOutlineModeOn;
 
 - (IBAction)toggleViewTableText:(id)sender;
 

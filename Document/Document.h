@@ -28,6 +28,7 @@
  */
 
 #import <Cocoa/Cocoa.h>
+#import "SearchController.h"
 
 @interface Document : NSDocument {
 	NSTreeNode *rootNode; // tree representation of the object returned by the JSON parser
@@ -47,5 +48,7 @@
 - (NSString *)stringForNode: (NSTreeNode *)node;
 - (void)resetContents;
 - (NSTreeNode *)createNewTreeNodeWithContent:(id)contents;
+
+- (NSOrderedSet<NSTreeNode *> *)searchForString:(NSString *)keyword options:(SearchOptions)options node:(NSTreeNode *)node;
 
 @end

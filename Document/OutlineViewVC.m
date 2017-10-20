@@ -36,6 +36,8 @@
 #import "SBJsonWriter.h"
 #import "AutocompletionPool.h"
 #import "TextViewDelegateInterseptor.h"
+#import "SearchController.h"
+
 
 @interface OutlineViewVC ()
 - (void)refreshView;
@@ -45,6 +47,9 @@
 @property (nonatomic, strong) NSArray *dragItems;
 //@property (nonatomic, weak) id<NSTextViewDelegate> textEditorDelegate;
 @property (nonatomic, strong) TextViewDelegateInterseptor *textEditorDelegateInterseptor;
+
+@property (nonatomic, strong) NSOrderedSet *searchResults;
+@property (nonatomic, readwrite) NSInteger selectedSearchIndex;
 
 @end
 
@@ -170,6 +175,22 @@ static NSNumberFormatter *numberFormatter = nil;
 	}
 	
 	return cell;
+}
+
+- (void)outlineViewSelectionDidChange:(NSNotification *)notification {
+    NSUInteger flags = [[NSApp currentEvent] modifierFlags];
+    if (0 == (flags & NSAlternateKeyMask)) {
+        return;
+    }
+    NSUInteger index = self.outlineView.selectedRow;
+    NSTreeNode *selectedNode = [self.outlineView itemAtRow:index];
+    NodeObject *nodeObject = selectedNode.representedObject;
+    if (nodeObject.type == kNodeObjectTypeString) {
+        NSString *value = nodeObject.value;
+        if (value.length > 3) {
+            [[NSApplication sharedApplication] sendAction:NSSelectorFromString(@"searchFor:") to:nil from: value];
+        }
+    }
 }
 
 - (BOOL)outlineView:(NSOutlineView *)theView shouldEditTableColumn:(NSTableColumn *)tableColumn item:(id)item {
@@ -819,21 +840,66 @@ objectValueForTableColumn:(NSTableColumn *)tableColumn
     }
 }
 
+#pragma mark -
+#pragma mark - Search
+
+- (NSInteger)selectItem:(NSTreeNode *)node {
+    if (nil == node || ![node isKindOfClass:[NSTreeNode class]]) {
+        return -1;
+    }
+    NSInteger index = -1;
+    NSTreeNode *nodeToOpen = node;
+    NSMutableOrderedSet *chain = [NSMutableOrderedSet new];
+    do {
+        [chain addObject: nodeToOpen];
+        index = [self.outlineView rowForItem: nodeToOpen];
+        nodeToOpen = nodeToOpen.parentNode;
+    } while (index < 0 && nil != nodeToOpen);
+    
+    // If postion of root parent still unknown - return. Perhaps node not in tree at all.
+    if (index < 0) {
+        return -1;
+    }
+    
+    // Expend all chain of parents up node
+    for (NSTreeNode *each in [chain reversedOrderedSet]) {
+        [self.outlineView expandItem: each];
+    }
+    
+    index = [self.outlineView rowForItem: node];
+    
+    [self.outlineView
+     selectRowIndexes:[NSIndexSet indexSetWithIndex:index]
+     byExtendingSelection: NO
+     ];
+    [self.outlineView scrollRowToVisible: index];
+    return index;
+}
+
+- (NSOrderedSet *)searchFor:(NSString *)keyword withOptions:(SearchOptions)options {
+    Document *doc = self.representedObject;
+    NSOrderedSet *searchResult = [doc searchForString:keyword options:options node:nil];
+    return searchResult;
+}
+
+- (BOOL)showSearchResult:(id)searchResult {
+    NSInteger selectedIndex = [self selectItem: searchResult];
+    return selectedIndex >= 0;
+}
+
+
+
+#pragma mark -
+#pragma mark - TextViewDelegate
+
 - (NSArray<NSString *> *)textView:(NSTextView *)textView completions:(NSArray<NSString *> *)words forPartialWordRange:(NSRange)charRange indexOfSelectedItem:(NSInteger *)index {
-//    NSArray *suggestions = @[@"some", @"weird", @"words"];
     NSArray *suggestions = [AutocompletionPool.sharedInstance suggestionsForMask:textView.string];
     
     return suggestions;
 }
 
-- (void)textDidChange:(NSNotification *)notification{
-//    NSTextView *textView = notification.object;
-//    NSString *text = textView.string;
-//    if (text.length > 3) {
-//        [textView complete:nil];
-//    }
-}
-
 @end
+
+
 
 

@@ -32,13 +32,19 @@
 #import "NodeObject.h"
 #import "JSON.h"
 #import "OutlineViewVC.h"
+#import "OutlineView.h"
 #import "TextViewVC.h"
+#import "SearchController.h"
 
-@interface DocumentWC ()
+@interface DocumentWC () <NSTextFinderClient>
 - (void)showParseError:(NSError *)error;
 - (void)loadOutlineView;
 - (void)loadTextViewWithString:(NSString *)string;
 - (void)setCurrentVC:(NSViewController *)viewController;
+
+@property (nonatomic, strong) SearchController *searchController;
+//@property (weak) IBOutlet NSView *findBarView;
+
 @end
 
 @implementation DocumentWC
@@ -107,8 +113,14 @@
 	[[self window] makeFirstResponder:subview];
 }
 
+- (BOOL)isOutlineModeOn {
+    return (nil != outlineViewVC && currentVC == outlineViewVC);
+}
+
 #pragma mark -
 #pragma mark Actions
+
+
 
 - (IBAction)toggleViewTableText:(id)sender {
 	Document *doc = [self document];
@@ -165,4 +177,40 @@
 - (void)didPresentErrorWithRecovery:(BOOL)didRecover contextInfo:(void  *)contextInfo {
 }
 
+#pragma mark - Search
+
+- (NSOrderedSet *)searchFor:(NSString *)keyword withOptions:(SearchOptions)options {
+    if (self.isOutlineModeOn) {
+        return [outlineViewVC searchFor:keyword withOptions:options];
+    }
+    return nil;
+}
+
+- (BOOL)showSearchResult:(id)searchResult {
+    if (self.isOutlineModeOn) {
+        return [outlineViewVC showSearchResult:searchResult];
+    }
+    return NO;
+}
+
+-(IBAction)performFindPanelAction:(id)sender { // Called when the find command is invoked by the user
+    self.searchController = [SearchController new];
+    self.searchController.container = [outlineViewVC.outlineView enclosingScrollView];
+    self.searchController.delegate = outlineViewVC;
+    [self.searchController show];
+}
+
 @end
+
+@interface DocumentWC (Search) <NSTextFinderClient>
+
+
+@end
+
+@implementation DocumentWC (Search)
+
+
+@end
+
+
+

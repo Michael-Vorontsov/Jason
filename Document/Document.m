@@ -32,10 +32,12 @@
 #import "JSON.h"
 #import "NodeObject.h"
 #import "OrderedDictionary.h"
+#import "SearchController.h"
 
 @interface Document ()
 - (void)readChildrenOf:(NSTreeNode *)parentNode;
 - (void)writeChildrenOf:(NSTreeNode *)parentNode toObject:(id)object;
+@property (nonatomic, strong) NSMutableDictionary *finderIndex;
 @end
 
 @implementation Document
@@ -191,6 +193,23 @@
     }
 }
 
+- (NSOrderedSet<NSTreeNode *> *)searchForString:(NSString *)keyword options:(SearchOptions)options node:(NSTreeNode *)node {
+    node = (nil != node) ? node : self.rootNode;
+    NSMutableOrderedSet *results = [NSMutableOrderedSet new];
+    NodeObject *nodeObject = node.representedObject;
+    if ((0 != (options & kSearchOptionKey)) && [nodeObject.key.capitalizedString containsString: keyword.capitalizedString]) {
+        [results addObject: node];
+    }
+    if ((0 != (options & kSearchOptionValue)) && ([nodeObject.value isKindOfClass:[NSString class]] || [nodeObject.value isKindOfClass:[NSNumber class]]) && [[nodeObject.value description] containsString: keyword]) {
+        [results addObject: node];
+    }
+    for (NSTreeNode* each in node.childNodes) {
+        NSOrderedSet *subsearchResult = [self searchForString:keyword options:options node:each];
+        [results unionOrderedSet: subsearchResult];
+    }
+    return results;
+}
+
 #pragma mark -
 #pragma mark Read and write
 
@@ -223,5 +242,7 @@
 - (BOOL)canConcurrentlyReadDocumentsOfType:(NSString *)typeName {
 	return YES;
 }
+
+
 
 @end

@@ -28,11 +28,12 @@
  */
 
 #import <Cocoa/Cocoa.h>
+#import "SearchController.h"
 
 @class OpenURLWC;
 @class PreferencesWC;
 
-@interface AppDelegate : NSObject {
+@interface AppDelegate : NSObject <SearchControllerDelegate> {
 	OpenURLWC *openURLWC;
 	PreferencesWC *preferencesWC;
 }

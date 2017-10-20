@@ -29,10 +29,11 @@
 
 #import <Cocoa/Cocoa.h>
 #import "OutlineViewDelegate.h"
+#import "Document.h"
 
 @class OutlineView;
 
-@interface OutlineViewVC : NSViewController <OutlineViewDelegate, NSOutlineViewDataSource, NSTextViewDelegate, NSControlTextEditingDelegate> {
+@interface OutlineViewVC : NSViewController <OutlineViewDelegate, NSOutlineViewDataSource, NSTextViewDelegate, NSControlTextEditingDelegate, NSTextFinderClient, SearchControllerDelegate> {
 	IBOutlet NSScrollView *outlineScrollView;
 	IBOutlet OutlineView *outlineView;
 	IBOutlet NSTableColumn *keyColumn;
@@ -60,6 +61,5 @@
 - (IBAction)toggleEditValueColumnOnly:(id)sender;
 - (IBAction)copy:(id)sender;
 - (IBAction)paste:(id)sender;
-
 
 @end

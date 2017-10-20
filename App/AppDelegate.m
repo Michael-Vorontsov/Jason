@@ -32,6 +32,7 @@
 #import "PreferencesWC.h"
 #import "SBJsonParser.h"
 #import "Document.h"
+#import "SearchController.h"
 
 @implementation AppDelegate
 
@@ -45,15 +46,56 @@
 	[preferencesWC showWindow:self];
 }
 
-- (BOOL)validateUserInterfaceItem:(id <NSValidatedUserInterfaceItem>)item {
-    if ([item action] == @selector(paste:)) {
-        NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
-        NSArray *classArray = [NSArray arrayWithObject:[NSString class]];
-        NSDictionary *options = [NSDictionary dictionary];
-        return [pasteboard canReadObjectForClasses:classArray options:options];
+
+//- (BOOL)validateUserInterfaceItem:(id <NSValidatedUserInterfaceItem>)item {
+//    if ([item action] == @selector(paste:)) {
+//        NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
+//        NSArray *classArray = [NSArray arrayWithObject:[NSString class]];
+//        NSDictionary *options = [NSDictionary dictionary];
+//        return [pasteboard canReadObjectForClasses:classArray options:options];
+//    }
+//
+//    return YES;
+//}
+
+
+- (IBAction)searchFor:(id)sender {
+    
+    NSString *string = nil;
+    if ( [sender isKindOfClass:[NSString class]]) {
+        string = sender;
     }
-	
-	return YES;
+    
+    if (string.length > 3) {
+        NSOrderedSet *results = [self searchFor:string withOptions:kSearchOptionKey];
+        if (results.count > 0) {
+            [self showSearchResult: results.firstObject];
+        }
+    }
+}
+
+- (NSOrderedSet *)searchFor:(NSString *)keyword withOptions:(SearchOptions)options {
+    NSMutableOrderedSet *results = [NSMutableOrderedSet new];
+    for (NSWindow *window in [[NSApplication sharedApplication] windows]) {
+        NSWindowController *controller = [window windowController];
+        if ([controller respondsToSelector:@selector(searchFor:withOptions:)]) {
+            [results unionOrderedSet: [(id<SearchControllerDelegate>)controller searchFor:keyword withOptions:options]];
+        }
+    }
+    return results;
+}
+
+- (BOOL)showSearchResult:(id)searchResult {
+    for (NSWindow *window in [[NSApplication sharedApplication] windows]) {
+        NSWindowController *controller = [window windowController];
+        if ([controller respondsToSelector:@selector(showSearchResult:)]) {
+            if ([(id<SearchControllerDelegate>)controller showSearchResult: searchResult]) {
+                [window makeKeyWindow];
+                return YES;
+            }
+        }
+    }
+    return NO;
 }
 
 @end
