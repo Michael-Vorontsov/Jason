@@ -35,6 +35,13 @@
 #import "SearchController.h"
 #import "AutocompletionPool.h"
 
+NSString *const kNodeDidChangedNotificationName = @"nodeDidChanged";
+NSString *const kNodeDidDeletedNotificationName = @"nodeDidDeleted";
+NSString *const kNodeDidInsertedNotificationName = @"nodeDidInserted";
+
+NSString *const kNodeNotificationInfoKeyParent = @"parent";
+NSString *const kNodeNotificationInfoKeyPosition = @"position";
+
 @interface Document ()
 - (void)readChildrenOf:(NSTreeNode *)parentNode;
 - (void)writeChildrenOf:(NSTreeNode *)parentNode toObject:(id)object;
@@ -242,6 +249,7 @@
     }];
 
     content.key = newKey;
+    [[NSNotificationCenter defaultCenter] postNotificationName:kNodeDidChangedNotificationName object:node];
 }
 
 - (void)setValue:(id<NodeContentProtocol>)newValue forNode:(NSTreeNode *)node {
@@ -255,6 +263,7 @@
     }];
 
     content.value = newValue;
+    [[NSNotificationCenter defaultCenter] postNotificationName:kNodeDidChangedNotificationName object:node];
 }
 
 - (id<NodeContentProtocol>)valueForNode:(NSTreeNode *)node {
@@ -342,18 +351,26 @@
     
     if (! parentNode) { // removing the root object
         [self resetContents];
+        return;
     }
-    else {
-        NSIndexPath *path = [currentNode indexPath];
-        NSUInteger position = [path indexAtPosition:[path length] - 1];
-        NSTreeNode *nodeToRemove = [[parentNode childNodes] objectAtIndex:position];
-        
-        [self.undoManager registerUndoWithTarget:self handler:^(id  _Nonnull target) {
-            [target insertNode:nodeToRemove toParentNode:parentNode atIndex:position];
-        }];
-        
-        [[parentNode mutableChildNodes] removeObjectAtIndex:position];
-    }
+    NSIndexPath *path = [currentNode indexPath];
+    NSUInteger position = [path indexAtPosition:[path length] - 1];
+    NSTreeNode *nodeToRemove = [[parentNode childNodes] objectAtIndex:position];
+    
+    [self.undoManager registerUndoWithTarget:self handler:^(id  _Nonnull target) {
+        [target insertNode:nodeToRemove toParentNode:parentNode atIndex:position];
+    }];
+    
+    [[parentNode mutableChildNodes] removeObjectAtIndex:position];
+    NSDictionary *info = @{
+        kNodeNotificationInfoKeyParent : parentNode,
+        kNodeNotificationInfoKeyPosition : @(position)
+    };
+    [[NSNotificationCenter defaultCenter]
+     postNotificationName: kNodeDidDeletedNotificationName
+     object: currentNode
+     userInfo: info
+    ];
 }
 
 - (void)insertNode:(NSTreeNode *)newNode toParentNode:(NSTreeNode *)parentNode atIndex:(NSUInteger)row {
@@ -367,6 +384,16 @@
     } else {
         [[parentNode mutableChildNodes] addObject:newNode];
     }
+    NSDictionary *info = @{
+                           kNodeNotificationInfoKeyParent : parentNode,
+                           kNodeNotificationInfoKeyPosition : @(row)
+                           };
+    [[NSNotificationCenter defaultCenter]
+     postNotificationName: kNodeDidInsertedNotificationName
+     object: newNode
+     userInfo: info
+     ];
+
 }
 
 #pragma mark -

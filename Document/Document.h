@@ -81,8 +81,9 @@ typedef NodeObjectType NodeContentType;
 
 @end
 
+extern NSString *const kNodeDidChangedNotificationName;
+extern NSString *const kNodeDidDeletedNotificationName;
+extern NSString *const kNodeDidInsertedNotificationName;
 
-
-//@interface Document (NodeContentAccess) <NodeContentAccessProtocol>
-//@end
-
+extern NSString *const kNodeNotificationInfoKeyParent;
+extern NSString *const kNodeNotificationInfoKeyPosition;

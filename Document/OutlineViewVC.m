@@ -105,24 +105,65 @@ static NSNumberFormatter *numberFormatter = nil;
     [outlineView sizeLastColumnToFit];
 
     NSNotificationCenter * _Nonnull notificationCenter = [NSNotificationCenter defaultCenter];
-    
-    [self.subscriptions addObject:
-     [notificationCenter
-      addObserverForName:NSUndoManagerDidUndoChangeNotification
-      object:nil
-      queue:[NSOperationQueue mainQueue]
-      usingBlock:^(NSNotification * _Nonnull note) {
-        [outlineView reloadData];
-      }]
-    ];
+
+    __typeof(self) __weak weakSelf = self;
 
     [self.subscriptions addObject:
      [notificationCenter
-      addObserverForName:NSUndoManagerDidRedoChangeNotification
+      addObserverForName: kNodeDidInsertedNotificationName
       object:nil
       queue:[NSOperationQueue mainQueue]
       usingBlock:^(NSNotification * _Nonnull note) {
-          [outlineView reloadData];
+          NSDictionary *info = note.userInfo;
+          NSTreeNode *node = note.object;
+          NSTreeNode *parent = info[kNodeNotificationInfoKeyParent];
+          NSInteger position = [parent.childNodes indexOfObject:node];
+          [weakSelf.outlineView beginUpdates];
+          [weakSelf.outlineView
+           insertItemsAtIndexes: [NSIndexSet indexSetWithIndex: position]
+           inParent:parent
+           withAnimation:NSTableViewAnimationSlideLeft
+           ];
+          [weakSelf showNode: node select: NO];
+          [weakSelf.outlineView endUpdates];
+      }]
+     ];
+    
+    [self.subscriptions addObject:
+     [notificationCenter
+      addObserverForName: kNodeDidDeletedNotificationName
+      object:nil
+      queue:[NSOperationQueue mainQueue]
+      usingBlock:^(NSNotification * _Nonnull note) {
+          NSDictionary *info = note.userInfo;
+          NSTreeNode *parent = info[kNodeNotificationInfoKeyParent];
+          NSInteger position = [info[kNodeNotificationInfoKeyPosition] integerValue];
+          if ([weakSelf.outlineView isItemExpanded: parent]) {
+              [weakSelf showNode: parent select: NO];
+              [weakSelf.outlineView beginUpdates];
+              [weakSelf.outlineView
+               removeItemsAtIndexes: [NSIndexSet indexSetWithIndex: position]
+               inParent:parent
+               withAnimation:NSTableViewAnimationSlideLeft
+               ];
+              [weakSelf.outlineView endUpdates];
+          } else {
+              [weakSelf showNode: parent select: NO];
+              [weakSelf.outlineView expandItem: parent];
+          }
+          
+      }]
+     ];
+    
+    [self.subscriptions addObject:
+     [notificationCenter
+      addObserverForName: kNodeDidChangedNotificationName
+      object:nil
+      queue:[NSOperationQueue mainQueue]
+      usingBlock:^(NSNotification * _Nonnull note) {
+          NSTreeNode *node = note.object;
+          [weakSelf showNode: node select: NO];
+          [weakSelf.outlineView reloadItem: node];
       }]
      ];
     
@@ -315,9 +356,6 @@ objectValueForTableColumn:(NSTableColumn *)tableColumn
             self.document.contents = [self.document valueForNode: currentNode];
             [outlineView reloadData];
         }
-        else {
-            [outlineView reloadItem:currentNode];
-        }
         
         [self.document updateChangeCount:NSChangeDone];
     }
@@ -385,7 +423,6 @@ objectValueForTableColumn:(NSTableColumn *)tableColumn
 			// We only allow replacing an existing key with a non-existing one
 			if (![children containsObject:newValue]) {
                 [self.document setKey: newValue forNode: currentNode];
-				[outlineView reloadItem:currentNode];
 				changed = YES;
 			}
 		}
@@ -407,12 +444,17 @@ objectValueForTableColumn:(NSTableColumn *)tableColumn
         }
 		else {
             [self.document setValue: newValue forNode: currentNode];
-			[outlineView reloadItem:currentNode];
 		}
 		changed = YES;
 	}
-	
-	if (changed) [doc updateChangeCount:NSChangeDone];	
+
+    if (changed) {
+        [doc updateChangeCount:NSChangeDone];
+        
+        [self.document.undoManager registerUndoWithTarget:self handler:^(id  _Nonnull target) {
+            [self showNode: item select: NO];
+        }];
+    }
 }
 
 #pragma mark -
@@ -456,16 +498,31 @@ objectValueForTableColumn:(NSTableColumn *)tableColumn
     id newContent = @"";
     NSTreeNode *newNode = [self.document createNewTreeNodeWithKey: newKey content: newContent];
     [self.document insertNode:newNode toParentNode:parentNode atIndex:NSIntegerMax];
-    [self.outlineView reloadItem:parentNode reloadChildren: YES];
-    [self.outlineView expandItem:parentNode];
-    
-    NSUInteger rowToSelect = [outlineView rowForItem:newNode];
-    [outlineView selectRowIndexes:[NSIndexSet indexSetWithIndex:rowToSelect] byExtendingSelection:NO];
-
-    NSInteger columnToEdit = (parentType == kNodeObjectTypeDictionary && (!editValueColumnOnly)) ? 0 : 2;
-    [outlineView editColumn:columnToEdit row:rowToSelect withEvent:nil select:YES];
+    // Strart editing with small delay after row added.
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        NSUInteger rowToSelect = [outlineView rowForItem:newNode];
+        [outlineView selectRowIndexes:[NSIndexSet indexSetWithIndex:rowToSelect] byExtendingSelection:NO];
+        NSInteger columnToEdit = (parentType == kNodeObjectTypeDictionary && (!editValueColumnOnly)) ? 0 : 2;
+        [outlineView editColumn:columnToEdit row:rowToSelect withEvent:nil select:YES];
+    });
 
 	[self.document updateChangeCount:NSChangeDone];
+}
+
+
+
+- (void)showNode:(NSTreeNode *)node select:(BOOL) shouldSelect{
+
+    NSTreeNode *parentNode = node;
+    while (nil != (parentNode = [parentNode parentNode]) && ![self.outlineView isItemExpanded: parentNode]) {
+        [self.outlineView expandItem: parentNode];
+    }
+    NSUInteger index = [self.outlineView rowForItem: node];
+    if (shouldSelect) {
+        [self.outlineView selectRowIndexes: [NSIndexSet indexSetWithIndex: index] byExtendingSelection: NO];
+    } else {
+        [self.outlineView scrollRowToVisible: index];
+    }
 }
 
 
@@ -479,7 +536,6 @@ objectValueForTableColumn:(NSTableColumn *)tableColumn
         NSTreeNode *currentNode = [outlineView itemAtRow:currentIndex];
         NSTreeNode *parentNode = [currentNode parentNode];
         [self.document deleteNode:currentNode fromParent:parentNode];
-        [self.outlineView reloadItem:parentNode reloadChildren: YES];
 	}
 	if ([selectedIndexSet count] == 1) {
 		[outlineView selectRowIndexes:[NSIndexSet indexSetWithIndex:[selectedIndexSet firstIndex]]
@@ -530,7 +586,6 @@ objectValueForTableColumn:(NSTableColumn *)tableColumn
                  enumerateObjectsWithOptions:NSEnumerationReverse
                  usingBlock:^(NSTreeNode *node, NSUInteger index, BOOL *stop) {
                      [self.document deleteNode:node fromParent:node.parentNode];
-                     [self.outlineView reloadItem: node.parentNode reloadChildren:YES];
                  }];
                 break;
             }
@@ -549,6 +604,9 @@ objectValueForTableColumn:(NSTableColumn *)tableColumn
 
 - (BOOL)outlineView:(NSOutlineView *)ov acceptDrop:(id <NSDraggingInfo>)info item:(id)item childIndex:(NSInteger)childIndex {
     NSTreeNode *node = (NSTreeNode *)item;
+    if (nil == node) {
+        node = self.document.rootNode;
+    }
     switch ([self.document typeForNode: node]) {
         case kNodeObjectTypeDictionary:
             break;
@@ -589,8 +647,6 @@ objectValueForTableColumn:(NSTableColumn *)tableColumn
          }
          NSTreeNode *newNode = [[[self.document createNewTreeNodeWithContent:parsedContents] childNodes] lastObject];
          [self.document insertNode:newNode toParentNode:node atIndex:childIndex];
-         [self.outlineView reloadItem:node reloadChildren:YES];
-         [self.outlineView expandItem:node];
 
          result = YES;
          
