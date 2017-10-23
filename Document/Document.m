@@ -97,8 +97,6 @@
     return [self createNewTreeNodeWithKey:nil content:nil];
 }
 
-
-
 - (id)contents {
     return [self contentForNode:self.rootNode];
 }
@@ -140,6 +138,7 @@
         for (NSString *key in [parentDict allKeys]) {
 			// Add a node for the child...
 			NodeObject *childObject = [[NodeObject alloc] initWithKey:key value:[parentDict objectForKey:key]];
+            [[AutocompletionPool sharedInstance] addString: key];
 
 			NSTreeNode *childNode = [[NSTreeNode alloc] initWithRepresentedObject:childObject];
 			[children addObject:childNode];
@@ -369,7 +368,6 @@
         [[parentNode mutableChildNodes] addObject:newNode];
     }
 }
-
 
 #pragma mark -
 #pragma mark Read and write
