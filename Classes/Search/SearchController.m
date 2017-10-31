@@ -14,18 +14,14 @@
 @interface SearchController ()
 
 @property (nonatomic, copy) NSString *lastSearchQuerry;
-//@property (nonatomic, weak) id<NSTextFinderBarContainer> container;
-//@property (nonatomic, weak) id<SearchControllerDelegate> delegate;
 @property (weak) IBOutlet NSSearchField *searchField;
 @property (nonatomic, strong) NSPointerArray *lastResults;
 @property (nonatomic, readwrite) NSInteger lastSelectedIndex;
 @property (nonatomic, readwrite) SearchOptions options;
 @property (weak) IBOutlet NSView *backgroundView;
 @property (weak) IBOutlet NSTextField *resultsLabel;
-@property (nonatomic, strong) NSPasteboard* pasteboard;
 
 @end
-
 
 @implementation SearchController
 
@@ -36,34 +32,15 @@
     self.backgroundView.layer.backgroundColor = [NSColor whiteColor].CGColor;
 }
 
-- (NSPasteboard *)pasteboard {
-    if (nil == _pasteboard) {
-        _pasteboard = [NSPasteboard pasteboardWithName: NSFindPboard];
-    }
-    return _pasteboard;
-}
-
 - (void)viewDidAppear {
     [super viewDidAppear];
 
-    NSString *lastSearchString = [[self.pasteboard readObjectsForClasses:@[[NSString class]] options:nil] lastObject];
-    self.searchField.stringValue = lastSearchString;
-    [self.pasteboard addObserver:self forKeyPath:@"changeCount" options:NSKeyValueObservingOptionNew context:nil];
+    NSPasteboard *pasteboard = [NSPasteboard pasteboardWithName: NSFindPboard];
 
+    NSString *lastSearchString = [[pasteboard readObjectsForClasses:@[[NSString class]] options:nil] lastObject];
+    self.searchField.stringValue = lastSearchString;
     [self.searchField becomeFirstResponder];
 }
-
-- (void)viewWillDisappear {
-    [super viewWillDisappear];
-    [self.pasteboard removeObserver:self forKeyPath:@"changeCount"];
-}
-
-- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)context {
-
-    NSString *lastSearchString = [[self.pasteboard readObjectsForClasses:@[[NSString class]] options:nil] lastObject];
-    self.searchField.stringValue = lastSearchString;
-}
-
 
 - (NSPointerArray *)lastResults {
     if (nil == _lastResults) {
