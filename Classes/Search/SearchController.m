@@ -35,6 +35,8 @@
 - (void)viewDidAppear {
     [super viewDidAppear];
 
+    self.resultsLabel.stringValue = @"";
+    
     NSPasteboard *pasteboard = [NSPasteboard pasteboardWithName: NSFindPboard];
 
     NSString *lastSearchString = [[pasteboard readObjectsForClasses:@[[NSString class]] options:nil] lastObject];
@@ -55,6 +57,7 @@
 }
 
 - (IBAction)search:(NSSearchField *)sender {
+    self.resultsLabel.stringValue = @"";
     NSString *querry = self.searchField.stringValue;
     if (querry.length < 1) {
         return;
@@ -65,6 +68,21 @@
             self.lastSearchQuerry = querry;
             self.lastSelectedIndex = 0;
             NSOrderedSet *results = [self.delegate searchFor:querry withOptions:self.options];
+            dispatch_async(dispatch_get_main_queue(), ^{
+                NSString *string = nil;
+                switch (results.count) {
+                    case 0:
+                        string = [NSString stringWithFormat: NSLocalizedString(@"Not found", nil)];
+                        break;
+                    case 1:
+                        string = [NSString stringWithFormat: NSLocalizedString(@"Found", nil)];
+                        break;
+                    default:
+                        string = [NSString stringWithFormat: NSLocalizedString(@"#1 from %lu", nil), results.count];
+                        break;
+                }
+                self.resultsLabel.stringValue = string;
+            });
             if (results.count < 1) {
                 return;
             }
@@ -72,7 +90,6 @@
                 [self.lastResults addPointer: (__bridge void * _Nullable)(each)];
             }
             dispatch_async(dispatch_get_main_queue(), ^{
-                self.resultsLabel.stringValue = [NSString stringWithFormat: NSLocalizedString(@"Found %lu", nil), results.count];
                 [self.delegate showSearchResult: results.firstObject];;
             });
         });
@@ -93,6 +110,8 @@
         self.lastSelectedIndex = 0;
     }
     [self.delegate showSearchResult: results[self.lastSelectedIndex]];
+    self.resultsLabel.stringValue = [NSString stringWithFormat: NSLocalizedString(@"#%lu from %lu", nil), self.lastSelectedIndex + 1, results.count];
+
 }
 
 - (IBAction)prev:(id)sender {
@@ -106,6 +125,7 @@
         self.lastSelectedIndex = results.count - 1;
     }
     [self.delegate showSearchResult:  results[self.lastSelectedIndex]];
+    self.resultsLabel.stringValue = [NSString stringWithFormat: NSLocalizedString(@"#%lu from %lu", nil), self.lastSelectedIndex + 1, results.count];
 }
 
 - (void)show {
