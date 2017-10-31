@@ -163,25 +163,33 @@ static NSNumberFormatter *numberFormatter = nil;
       usingBlock:^(NSNotification * _Nonnull note) {
           NSTreeNode *node = note.object;
           [weakSelf showNode: node select: NO];
-          [weakSelf.outlineView reloadItem: node];
+          if (nil == node.parentNode && self.document.rootNode == node) {
+              [weakSelf refreshView];
+          } else {
+              [weakSelf.outlineView reloadItem:node reloadChildren:YES];
+          }
       }]
      ];
     
     [self.outlineView registerForDraggedTypes:@[NSStringPboardType, NSFilenamesPboardType, NSURLPboardType]];
     [self.outlineView setDraggingSourceOperationMask:NSDragOperationEvery forLocal:YES];
     [self.outlineView setDraggingSourceOperationMask:NSDragOperationEvery forLocal:NO];
-
+    
     [super viewDidLoad];
+    
+    [self refreshView];
 }
 
 - (void)setRepresentedObject:(id)representedObject {
 	[super setRepresentedObject:representedObject];
-	[self refreshView];
+    if (NO == self.isViewLoaded) {
+        [self refreshView];
+    }
 }
 
 - (void)refreshView {
 	[outlineView reloadData];
-	[outlineView expandItem:[outlineView itemAtRow:0] expandChildren:YES];	
+    [outlineView expandItem:[outlineView itemAtRow:0] expandChildren:NO];
 }
 
 #pragma mark -

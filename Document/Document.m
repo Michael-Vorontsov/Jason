@@ -62,16 +62,22 @@ NSString *const kNodeNotificationInfoKeyPosition = @"position";
 - (id)init {
 	self = [super init];
 	if (self) [self resetContents];
-	return self;
+    return self;
 }
 
 - (void)makeWindowControllers {
 	[self addWindowController:[DocumentWC new]];
 }
 
++ (BOOL)autosavesInPlace {
+    return YES;
+}
+
+- (BOOL)canAsynchronouslyWriteToURL:(NSURL *)url ofType:(NSString *)typeName forSaveOperation:(NSSaveOperationType)saveOperation {
+    return YES;
+}
 #pragma mark -
 #pragma mark Tree/object/string representation
-
 - (void)resetContents {
 	self.contents = [MutableOrderedDictionary new];
 }
@@ -80,6 +86,7 @@ NSString *const kNodeNotificationInfoKeyPosition = @"position";
 	NodeObject *data = [[NodeObject alloc] initWithValue:contents];
 	rootNode = [[NSTreeNode alloc] initWithRepresentedObject:data];
 	[self readChildrenOf:rootNode];
+    [[NSNotificationCenter defaultCenter] postNotificationName:kNodeDidChangedNotificationName object:rootNode];
 }
 
 - (NSTreeNode *)createNewTreeNodeWithKey:(NSString *)key content:(id)contents {
