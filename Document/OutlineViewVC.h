@@ -61,5 +61,6 @@
 - (IBAction)toggleEditValueColumnOnly:(id)sender;
 - (IBAction)copy:(id)sender;
 - (IBAction)paste:(id)sender;
+- (IBAction)searchForSelected:(id)sender;
 
 @end

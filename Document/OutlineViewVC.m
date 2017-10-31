@@ -221,6 +221,10 @@ static NSNumberFormatter *numberFormatter = nil;
     if (0 == (flags & NSAlternateKeyMask)) {
         return;
     }
+    [self searchForSelected: nil];
+}
+
+- (IBAction)searchForSelected:(id)sender {
     NSUInteger index = self.outlineView.selectedRow;
     NSTreeNode *selectedNode = [self.outlineView itemAtRow:index];
     if ([self.document typeForNode:selectedNode] == kNodeObjectTypeString) {
@@ -229,6 +233,10 @@ static NSNumberFormatter *numberFormatter = nil;
             [[NSApplication sharedApplication] sendAction:NSSelectorFromString(@"searchFor:") to:nil from: value];
         }
     }
+}
+
+- (IBAction)centerSelectionInVisibleArea:(id)sender{
+    [self.outlineView scrollRowToVisible: self.outlineView.selectedRow];
 }
 
 - (BOOL)outlineView:(NSOutlineView *)theView shouldEditTableColumn:(NSTableColumn *)tableColumn item:(id)item {
