@@ -15,6 +15,7 @@
 		09B87F5B1FA9E19700727184 /* Navigator.m in Sources */ = {isa = PBXBuildFile; fileRef = 09B87F5A1FA9E19700727184 /* Navigator.m */; };
 		09B87F5E1FA9E1B600727184 /* Jump.m in Sources */ = {isa = PBXBuildFile; fileRef = 09B87F5D1FA9E1B600727184 /* Jump.m */; };
 		09B87F7A1FAA3A6400727184 /* Jason.help in Resources */ = {isa = PBXBuildFile; fileRef = 09B87F791FAA3A6400727184 /* Jason.help */; };
+		09ED8C7F1FAA48EA0047810B /* index.html in Resources */ = {isa = PBXBuildFile; fileRef = 09ED8C7E1FAA48E90047810B /* index.html */; };
 		1418D026125D61D10040CBB6 /* DocumentWC.m in Sources */ = {isa = PBXBuildFile; fileRef = 1418D025125D61D10040CBB6 /* DocumentWC.m */; };
 		1418D029125D61EB0040CBB6 /* NodeObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 1418D028125D61EB0040CBB6 /* NodeObject.m */; };
 		142FB6811272BEBE00EE4328 /* OutlineView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 142FB6801272BEBE00EE4328 /* OutlineView.xib */; };
@@ -74,6 +75,7 @@
 		09B87F5D1FA9E1B600727184 /* Jump.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Jump.m; sourceTree = "<group>"; };
 		09B87F791FAA3A6400727184 /* Jason.help */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Jason.help; sourceTree = "<group>"; };
 		09B87F7F1FAA420300727184 /* info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = info.plist; path = Jason.help/Contents/info.plist; sourceTree = "<group>"; };
+		09ED8C7E1FAA48E90047810B /* index.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; name = index.html; path = Jason.help/Contents/Resources/index.html; sourceTree = "<group>"; };
 		0A4183721938322900FB18D6 /* Jason.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Jason.pch; path = Support/Jason.pch; sourceTree = "<group>"; };
 		1058C7A7FEA54F5311CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
 		1418D024125D61D10040CBB6 /* DocumentWC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DocumentWC.h; path = Document/DocumentWC.h; sourceTree = "<group>"; };
@@ -169,6 +171,7 @@
 		09B87F741FAA389800727184 /* Help */ = {
 			isa = PBXGroup;
 			children = (
+				09ED8C7E1FAA48E90047810B /* index.html */,
 				09B87F7F1FAA420300727184 /* info.plist */,
 			);
 			name = Help;
@@ -404,6 +407,7 @@
 				14E795F7125BDC98006EC2F6 /* Jason.icns in Resources */,
 				14E795FB125C151D006EC2F6 /* Licence.txt in Resources */,
 				14E79633125C1733006EC2F6 /* Jason Document.icns in Resources */,
+				09ED8C7F1FAA48EA0047810B /* index.html in Resources */,
 				09B711001F99FCBA005D6440 /* SearchController.xib in Resources */,
 				143303121265A90C0086DD35 /* Credits.html in Resources */,
 				1433033C1265AC370086DD35 /* Preferences.xib in Resources */,
