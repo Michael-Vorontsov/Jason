@@ -33,6 +33,7 @@
 #import "SBJsonParser.h"
 #import "Document.h"
 #import "SearchController.h"
+#import "Navigator.h"
 
 @implementation AppDelegate
 
@@ -45,19 +46,6 @@
 	if (! preferencesWC) preferencesWC = [PreferencesWC new];
 	[preferencesWC showWindow:self];
 }
-
-
-//- (BOOL)validateUserInterfaceItem:(id <NSValidatedUserInterfaceItem>)item {
-//    if ([item action] == @selector(paste:)) {
-//        NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
-//        NSArray *classArray = [NSArray arrayWithObject:[NSString class]];
-//        NSDictionary *options = [NSDictionary dictionary];
-//        return [pasteboard canReadObjectForClasses:classArray options:options];
-//    }
-//
-//    return YES;
-//}
-
 
 - (IBAction)searchFor:(id)sender {
     
@@ -90,12 +78,31 @@
         NSWindowController *controller = [window windowController];
         if ([controller respondsToSelector:@selector(showSearchResult:)]) {
             if ([(id<SearchControllerDelegate>)controller showSearchResult: searchResult]) {
+                
+                Document *document = [(NSWindowController *)controller document];
+                NSString *name = [document keyForNode:(NSTreeNode *) searchResult];
+                [self.navigator addNewJump:name document:document node:searchResult];
+                
                 [window makeKeyWindow];
                 return YES;
             }
         }
     }
     return NO;
+}
+
+- (void) applicationDidFinishLaunching:(NSNotification *)notificiation {
+    NSApplication *app = [NSApplication sharedApplication];
+    NSResponder *nextReponder = [app nextResponder];
+    [self.navigator setNextResponder: nextReponder];
+    [app setNextResponder: self.navigator];
+}
+
+- (Navigator *)navigator {
+    if (nil == _navigator) {
+        _navigator = [Navigator new];
+    }
+    return _navigator;
 }
 
 @end

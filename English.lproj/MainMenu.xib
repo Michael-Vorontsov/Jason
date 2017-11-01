@@ -289,6 +289,27 @@ CA
                         </items>
                     </menu>
                 </menuItem>
+                <menuItem title="Navigate" tag="42" id="JDh-iS-C08">
+                    <menu key="submenu" title="Navigate" id="woo-bg-5oV">
+                        <items>
+                            <menuItem title="Forward" tag="1" keyEquivalent="]" id="Xnb-FO-cjC">
+                                <connections>
+                                    <action selector="jumpNext:" target="-1" id="ddT-P0-vvU"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Backward" tag="2" keyEquivalent="[" id="efz-S4-D8g">
+                                <connections>
+                                    <action selector="jumpPrev:" target="-1" id="8vt-Zv-7bx"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem isSeparatorItem="YES" id="jEO-gQ-0Yx"/>
+                            <menuItem title="Recent Jumps" tag="3" id="QaL-Y2-dj9">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <menu key="submenu" title="Recent Jumps" id="7Rr-V6-9yT"/>
+                            </menuItem>
+                        </items>
+                    </menu>
+                </menuItem>
                 <menuItem title="View" id="488">
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <menu key="submenu" title="View" id="491">

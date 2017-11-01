@@ -32,11 +32,14 @@
 
 @class OpenURLWC;
 @class PreferencesWC;
+@class Navigator;
 
 @interface AppDelegate : NSObject <SearchControllerDelegate> {
 	OpenURLWC *openURLWC;
 	PreferencesWC *preferencesWC;
 }
+
+@property (nonatomic, strong) Navigator *navigator;
 
 - (IBAction)openFromURL:(id)sender;
 - (IBAction)showPreferencesPanel:(id)sender;

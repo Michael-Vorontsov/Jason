@@ -36,6 +36,8 @@
 #import "AutocompletionPool.h"
 #import "TextViewDelegateInterseptor.h"
 #import "SearchController.h"
+#import "Navigator.h"
+#import "AppDelegate.h"
 
 @interface OutlineViewVC ()
 - (void)refreshView;
@@ -235,7 +237,14 @@ static NSNumberFormatter *numberFormatter = nil;
 - (IBAction)searchForSelected:(id)sender {
     NSUInteger index = self.outlineView.selectedRow;
     NSTreeNode *selectedNode = [self.outlineView itemAtRow:index];
+    
     if ([self.document typeForNode:selectedNode] == kNodeObjectTypeString) {
+
+        Navigator *navigator = [(AppDelegate *)[[NSApplication sharedApplication] delegate] navigator];
+        [navigator addNewJump:[self.document keyForNode:selectedNode]
+                     document:self.document
+                         node:selectedNode];
+
         NSString *value = [self.document valueForNode: selectedNode];
         if (value.length > 3) {
             [[NSApplication sharedApplication] sendAction:NSSelectorFromString(@"searchFor:") to:nil from: value];

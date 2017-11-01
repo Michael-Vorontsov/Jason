@@ -12,6 +12,8 @@
 		097AE9991F98B08800089C33 /* OrderedDictionary.m in Sources */ = {isa = PBXBuildFile; fileRef = 097AE9981F98B08800089C33 /* OrderedDictionary.m */; };
 		09B710FF1F99FCBA005D6440 /* SearchController.m in Sources */ = {isa = PBXBuildFile; fileRef = 09B710FD1F99FCBA005D6440 /* SearchController.m */; };
 		09B711001F99FCBA005D6440 /* SearchController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 09B710FE1F99FCBA005D6440 /* SearchController.xib */; };
+		09B87F5B1FA9E19700727184 /* Navigator.m in Sources */ = {isa = PBXBuildFile; fileRef = 09B87F5A1FA9E19700727184 /* Navigator.m */; };
+		09B87F5E1FA9E1B600727184 /* Jump.m in Sources */ = {isa = PBXBuildFile; fileRef = 09B87F5D1FA9E1B600727184 /* Jump.m */; };
 		1418D026125D61D10040CBB6 /* DocumentWC.m in Sources */ = {isa = PBXBuildFile; fileRef = 1418D025125D61D10040CBB6 /* DocumentWC.m */; };
 		1418D029125D61EB0040CBB6 /* NodeObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 1418D028125D61EB0040CBB6 /* NodeObject.m */; };
 		142FB6811272BEBE00EE4328 /* OutlineView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 142FB6801272BEBE00EE4328 /* OutlineView.xib */; };
@@ -65,6 +67,10 @@
 		09B710FC1F99FCBA005D6440 /* SearchController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SearchController.h; sourceTree = "<group>"; };
 		09B710FD1F99FCBA005D6440 /* SearchController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SearchController.m; sourceTree = "<group>"; };
 		09B710FE1F99FCBA005D6440 /* SearchController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = SearchController.xib; sourceTree = "<group>"; };
+		09B87F591FA9E19700727184 /* Navigator.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Navigator.h; sourceTree = "<group>"; };
+		09B87F5A1FA9E19700727184 /* Navigator.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Navigator.m; sourceTree = "<group>"; };
+		09B87F5C1FA9E1B600727184 /* Jump.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Jump.h; sourceTree = "<group>"; };
+		09B87F5D1FA9E1B600727184 /* Jump.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Jump.m; sourceTree = "<group>"; };
 		0A4183721938322900FB18D6 /* Jason.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Jason.pch; path = Support/Jason.pch; sourceTree = "<group>"; };
 		1058C7A7FEA54F5311CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
 		1418D024125D61D10040CBB6 /* DocumentWC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DocumentWC.h; path = Document/DocumentWC.h; sourceTree = "<group>"; };
@@ -144,6 +150,17 @@
 			);
 			name = Search;
 			path = Classes/Search;
+			sourceTree = "<group>";
+		};
+		09B87F581FA9E15F00727184 /* Navigator */ = {
+			isa = PBXGroup;
+			children = (
+				09B87F591FA9E19700727184 /* Navigator.h */,
+				09B87F5A1FA9E19700727184 /* Navigator.m */,
+				09B87F5C1FA9E1B600727184 /* Jump.h */,
+				09B87F5D1FA9E1B600727184 /* Jump.m */,
+			);
+			name = Navigator;
 			sourceTree = "<group>";
 		};
 		1058C7A6FEA54F5311CA2CBB /* Linked Frameworks */ = {
@@ -259,6 +276,7 @@
 		2A37F4ABFDCFA73011CA2CEA /* Classes */ = {
 			isa = PBXGroup;
 			children = (
+				09B87F581FA9E15F00727184 /* Navigator */,
 				09B710FB1F99FCBA005D6440 /* Search */,
 				097AE9961F98B08800089C33 /* OrderedDictionary */,
 				1433032E1265AB860086DD35 /* Preferences */,
@@ -390,6 +408,7 @@
 			files = (
 				097AE98B1F97C55200089C33 /* TextViewDelegateInterseptor.m in Sources */,
 				14E795B9125BB9FE006EC2F6 /* OpenURLWC.m in Sources */,
+				09B87F5E1FA9E1B600727184 /* Jump.m in Sources */,
 				14E795BF125BBA38006EC2F6 /* Document.m in Sources */,
 				14E795C0125BBA38006EC2F6 /* OutlineView.m in Sources */,
 				14E795CD125BBA96006EC2F6 /* NSObject+SBJSON.m in Sources */,
@@ -401,6 +420,7 @@
 				097AE9991F98B08800089C33 /* OrderedDictionary.m in Sources */,
 				14E795D3125BBAAC006EC2F6 /* main.m in Sources */,
 				097AE9861F97640000089C33 /* AutocompletionPool.m in Sources */,
+				09B87F5B1FA9E19700727184 /* Navigator.m in Sources */,
 				1495F31B125CEA69008DA431 /* AppDelegate.m in Sources */,
 				1418D026125D61D10040CBB6 /* DocumentWC.m in Sources */,
 				1418D029125D61EB0040CBB6 /* NodeObject.m in Sources */,
