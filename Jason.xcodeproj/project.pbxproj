@@ -14,6 +14,7 @@
 		09B711001F99FCBA005D6440 /* SearchController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 09B710FE1F99FCBA005D6440 /* SearchController.xib */; };
 		09B87F5B1FA9E19700727184 /* Navigator.m in Sources */ = {isa = PBXBuildFile; fileRef = 09B87F5A1FA9E19700727184 /* Navigator.m */; };
 		09B87F5E1FA9E1B600727184 /* Jump.m in Sources */ = {isa = PBXBuildFile; fileRef = 09B87F5D1FA9E1B600727184 /* Jump.m */; };
+		09B87F7A1FAA3A6400727184 /* Jason.help in Resources */ = {isa = PBXBuildFile; fileRef = 09B87F791FAA3A6400727184 /* Jason.help */; };
 		1418D026125D61D10040CBB6 /* DocumentWC.m in Sources */ = {isa = PBXBuildFile; fileRef = 1418D025125D61D10040CBB6 /* DocumentWC.m */; };
 		1418D029125D61EB0040CBB6 /* NodeObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 1418D028125D61EB0040CBB6 /* NodeObject.m */; };
 		142FB6811272BEBE00EE4328 /* OutlineView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 142FB6801272BEBE00EE4328 /* OutlineView.xib */; };
@@ -71,6 +72,8 @@
 		09B87F5A1FA9E19700727184 /* Navigator.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Navigator.m; sourceTree = "<group>"; };
 		09B87F5C1FA9E1B600727184 /* Jump.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Jump.h; sourceTree = "<group>"; };
 		09B87F5D1FA9E1B600727184 /* Jump.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Jump.m; sourceTree = "<group>"; };
+		09B87F791FAA3A6400727184 /* Jason.help */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Jason.help; sourceTree = "<group>"; };
+		09B87F7F1FAA420300727184 /* info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = info.plist; path = Jason.help/Contents/info.plist; sourceTree = "<group>"; };
 		0A4183721938322900FB18D6 /* Jason.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Jason.pch; path = Support/Jason.pch; sourceTree = "<group>"; };
 		1058C7A7FEA54F5311CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
 		1418D024125D61D10040CBB6 /* DocumentWC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DocumentWC.h; path = Document/DocumentWC.h; sourceTree = "<group>"; };
@@ -161,6 +164,14 @@
 				09B87F5D1FA9E1B600727184 /* Jump.m */,
 			);
 			name = Navigator;
+			sourceTree = "<group>";
+		};
+		09B87F741FAA389800727184 /* Help */ = {
+			isa = PBXGroup;
+			children = (
+				09B87F7F1FAA420300727184 /* info.plist */,
+			);
+			name = Help;
 			sourceTree = "<group>";
 		};
 		1058C7A6FEA54F5311CA2CBB /* Linked Frameworks */ = {
@@ -299,14 +310,16 @@
 		2A37F4B8FDCFA73011CA2CEA /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				09B87F741FAA389800727184 /* Help */,
+				09B87F791FAA3A6400727184 /* Jason.help */,
 				14E79636125C1AC8006EC2F6 /* Images */,
 				14E795FA125C151D006EC2F6 /* Licence.txt */,
 				8D15AC360486D014006FF6A4 /* Info.plist */,
 				089C165FFE840EACC02AAC07 /* InfoPlist.strings */,
+				143303111265A90C0086DD35 /* Credits.html */,
 				1DDD58280DA1D0D100B32029 /* Document.xib */,
 				1DDD582A0DA1D0D100B32029 /* MainMenu.xib */,
 				14E795D6125BBABB006EC2F6 /* OpenURL.xib */,
-				143303111265A90C0086DD35 /* Credits.html */,
 				1433033B1265AC370086DD35 /* Preferences.xib */,
 				142FB6801272BEBE00EE4328 /* OutlineView.xib */,
 				142FB6891272BF6600EE4328 /* TextView.xib */,
@@ -395,6 +408,7 @@
 				143303121265A90C0086DD35 /* Credits.html in Resources */,
 				1433033C1265AC370086DD35 /* Preferences.xib in Resources */,
 				142FB6811272BEBE00EE4328 /* OutlineView.xib in Resources */,
+				09B87F7A1FAA3A6400727184 /* Jason.help in Resources */,
 				142FB68A1272BF6600EE4328 /* TextView.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -521,7 +535,7 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = NO;
 				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(HOME)/Applications";
-				PRODUCT_BUNDLE_IDENTIFIER = com.casualpenguin.Jason;
+				PRODUCT_BUNDLE_IDENTIFIER = com.devtools.starsgroup.Jason;
 				PRODUCT_NAME = Jason;
 				SDKROOT = macosx;
 				VALID_ARCHS = "i386 x86_64";
@@ -546,7 +560,7 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = NO;
 				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(HOME)/Applications";
-				PRODUCT_BUNDLE_IDENTIFIER = com.casualpenguin.Jason;
+				PRODUCT_BUNDLE_IDENTIFIER = com.devtools.starsgroup.Jason;
 				PRODUCT_NAME = Jason;
 				SDKROOT = macosx;
 				VALID_ARCHS = "i386 x86_64";

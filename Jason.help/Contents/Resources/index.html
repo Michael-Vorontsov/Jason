@@ -1,0 +1,68 @@
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+	<head>
+		<style type="text/css">
+			body {
+				font-family:"Lucida Grande";
+				font-size: 8pt;
+			}
+		</style>
+	</head>
+	
+    <body>
+        <h1>
+            Quick Manual
+        </h1>
+        <p>
+        Application crearted on fork of old opensource Jason editor by Olivier Labs (2010)
+        </p>
+        <p>
+        However application was significantly improved according to current needs.
+        </p>
+        
+        <h3>Among others:</h3>
+        <p>
+        Undo/redo<br>
+        Copy/paste<br>
+        Drag and drop<br>
+        Autosaving and versioning<br>
+        Search<br>
+        Cross-reference search to reveal value by keys<br>
+        etc<br>
+        </p
+        <p>
+        Please mind that this editor didn't edit JSON text explicitly.<br>
+        It decompose JSON into base model components as TreeNodes, and then compose a new JSON text document while saving.
+        It retain order of elements in dictionaries and arrays, however it is forbiden to have several values in one
+        dictionary with same key, so nevertheless it is possible to have tree sructure presened that way on UI, values
+        will be overriden during saving.
+        </p>
+        <h2>
+            Quick keys:</h2>
+        </p>
+            <b>tad</b> edit key for selected row<br>
+            <b>enter</b> edit value for selected row, if available<br>
+            <b>cmd+I</b> insert new row below selected row<br>
+            <b>alt + select row</b> reveal value: search all opened files for key that contains value of selected row<br>
+            <b>cmd + E</b> reveal value (see above) <br>
+            <b>cmd + ]/[ </b> jump between diferent revealed values <br>
+            <b>cmd + F</b> open Find bar <br>
+        </p>
+        <p>
+        If you have any questions or ideas for improvement please do no hesitate to fork
+        <a href="https://github.com/Michael-Vorontsov/Jason"> git hub </a>
+        or to share your ideas with <a href="mailto:michel06@ukr.net"> me </a>
+        </p>
+		<p>
+			Copyright (c) 2017 Michael Vorontsov<br/>
+			All rights reserved
+		</p>
+		<p>
+			JSON parsing provided by<br/>
+            Stig&rsquo;s <a href="http://stig.github.com/json-framework/">json-framework</a>
+			v2.3.1
+		</p>
+	</body>
+</html>

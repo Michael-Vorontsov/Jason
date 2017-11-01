@@ -96,6 +96,11 @@
     NSResponder *nextReponder = [app nextResponder];
     [self.navigator setNextResponder: nextReponder];
     [app setNextResponder: self.navigator];
+    
+    NSURL *helpURL = [[NSBundle mainBundle] URLForResource:@"Jason" withExtension:@"help"];
+    NSBundle *helpBundle = [NSBundle bundleWithURL: helpURL];
+    [[NSHelpManager sharedHelpManager] registerBooksInBundle: helpBundle];
+
 }
 
 - (Navigator *)navigator {
