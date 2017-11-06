@@ -100,7 +100,6 @@
     NSURL *helpURL = [[NSBundle mainBundle] URLForResource:@"Jason" withExtension:@"help"];
     NSBundle *helpBundle = [NSBundle bundleWithURL: helpURL];
     [[NSHelpManager sharedHelpManager] registerBooksInBundle: helpBundle];
-
 }
 
 - (Navigator *)navigator {

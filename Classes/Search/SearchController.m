@@ -37,9 +37,10 @@
     self.resultsLabel.stringValue = @"";
     
     NSPasteboard *pasteboard = [NSPasteboard pasteboardWithName: NSFindPboard];
-
     NSString *lastSearchString = [[pasteboard readObjectsForClasses:@[[NSString class]] options:nil] lastObject];
-    self.searchField.stringValue = lastSearchString;
+    if (nil != lastSearchString) {
+        self.searchField.stringValue = lastSearchString;
+    }
     [self.searchField becomeFirstResponder];
 }
 
