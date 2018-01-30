@@ -755,7 +755,7 @@ objectValueForTableColumn:(NSTableColumn *)tableColumn
         [self editValue: self];
 		return YES;
 	}
-	
+    
 	// It's not a key event we want to capture, so let the
 	// outline view deal with it
 	return NO;
@@ -801,6 +801,16 @@ objectValueForTableColumn:(NSTableColumn *)tableColumn
 			columnIndex = lastColumn;
 		}		
 	}
+    // ... Delete - should present autocompletion
+    else if (command == @selector(cancel:)) {
+        [textView complete: control];
+        return NO;
+    }
+//! Uncomment to log possible selectors:
+//    else {
+//        NSLog(@"cmd: %@", NSStringFromSelector(command));
+//
+//    }
 
 	
 	return NO;
