@@ -62,7 +62,7 @@
     if (querry.length < 1) {
         return;
     }
-    if (querry != self.lastSearchQuerry) {
+    if (querry != self.lastSearchQuerry || self.lastResults.count > 0) {
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
             self.lastResults = nil;
             self.lastSearchQuerry = querry;
@@ -94,8 +94,11 @@
             });
         });
     }
-    else {
+    else if (self.lastResults.count > 0) {
         [self next: sender];
+    }
+    else {
+        self.resultsLabel.stringValue = [NSString stringWithFormat: NSLocalizedString(@"Not found", nil)];
     }
 }
 
