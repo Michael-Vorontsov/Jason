@@ -165,7 +165,7 @@ static NSMutableCharacterSet *kEscapeChars;
     }
     [json appendString:@"{"];
     
-    NSString *colon = [self humanReadable] ? @": " : @": ";
+    NSString *colon = [self humanReadable] ? @":" : @":";
     BOOL addComma = NO;
     NSArray *keys = [fragment allKeys];
     if (self.sortKeys)

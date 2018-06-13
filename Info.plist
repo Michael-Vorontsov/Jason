@@ -2,6 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>CFAppleHelpAnchor</key>
+	<string>index.html</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>English</string>
 	<key>CFBundleDocumentTypes</key>
@@ -38,9 +40,9 @@
 	<key>CFBundleExecutable</key>
 	<string>${EXECUTABLE_NAME}</string>
 	<key>CFBundleHelpBookFolder</key>
-	<string>${PRODUCT_NAME}.help</string>
+	<string>Jason.help</string>
 	<key>CFBundleHelpBookName</key>
-	<string>$(PRODUCT_BUNDLE_IDENTIFIER).help</string>
+	<string>com.devtools.starsgroup.Jason.help</string>
 	<key>CFBundleIconFile</key>
 	<string>Jason.icns</string>
 	<key>CFBundleIdentifier</key>

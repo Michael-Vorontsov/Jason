@@ -97,9 +97,22 @@
     [self.navigator setNextResponder: nextReponder];
     [app setNextResponder: self.navigator];
     
-    NSURL *helpURL = [[NSBundle mainBundle] URLForResource:@"Jason" withExtension:@"help"];
+//    NSURL *helpURL = [[NSBundle mainBundle] URLForResource:@"Jason" withExtension:@"help"];
+//    NSBundle *helpBundle = [NSBundle bundleWithURL: helpURL];
+//    [[NSHelpManager sharedHelpManager] registerBooksInBundle: helpBundle];
+
+    NSURL *helpURL = [[NSBundle mainBundle] URLForResource:@"Mail" withExtension:@"help"];
+//    NSURL *helpURL = [NSBundle mainBundle] ;
     NSBundle *helpBundle = [NSBundle bundleWithURL: helpURL];
-    [[NSHelpManager sharedHelpManager] registerBooksInBundle: helpBundle];
+    BOOL success = [[NSHelpManager sharedHelpManager] registerBooksInBundle: helpBundle];
+    NSLog(@"%i", (int)success);
+
+    //    [[NSHelpManager sharedHelpManager] registerBooksInBundle: [NSBundle mainBundle]];
+
+    NSString *lookForBookName = [[NSBundle mainBundle] objectForInfoDictionaryKey: @"CFBundleHelpBookName"];
+//    [[NSHelpManager sharedHelpManager] openHelpAnchor:@"anchor1"  inBook:locBookName];
+//    [[NSHelpManager sharedHelpManager] openHelpAnchor:@"anchor1"  inBook:locBookName];
+    [[NSHelpManager sharedHelpManager] findString:@"Quick Manual" inBook:lookForBookName];
 }
 
 - (Navigator *)navigator {
