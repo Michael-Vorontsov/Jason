@@ -8,7 +8,9 @@
 #import "TextViewDelegateInterseptor.h"
 
 @interface TextViewDelegateInterseptor()
+
 @property (nonatomic, strong) NSPointerArray *delegates;
+
 @end
 
 @implementation TextViewDelegateInterseptor
